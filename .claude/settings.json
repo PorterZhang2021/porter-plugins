@@ -1,0 +1,34 @@
+{
+  "defaultMode": "acceptEdits",
+  "allow": [
+    "Read",
+    "Edit",
+    "Write",
+    "Glob",
+    "Grep",
+    "Bash(git status)",
+    "Bash(git add *)",
+    "Bash(git commit *)",
+    "Bash(git branch *)",
+    "Bash(git checkout *)",
+    "Bash(git diff *)",
+    "Bash(git log *)",
+    "Bash(ls *)",
+    "Bash(cat *)",
+    "Bash(mkdir:./*)",
+    "Bash(cp:./*)",
+    "Bash(mv:./*)",
+    "Bash(touch:./*)"
+  ],
+  "ask": [
+    "Bash(git push *)",
+    "Bash(git reset --hard *)",
+    "Bash(git branch -D *)",
+    "Bash(git branch -d *)",
+    "Bash(rm *)"
+  ],
+  "deny": [
+    "Bash(rm -rf:*)",
+    "Bash(sudo:*)"
+  ]
+}
