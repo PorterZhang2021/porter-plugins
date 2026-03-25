@@ -9,14 +9,22 @@ SUMMARY=()
 
 usage() {
   cat <<EOF
-Usage: ./install.sh [OPTIONS]
+Usage: ./install.sh <command> [OPTIONS]
 
-Sync claude-plugin assets to ~/.claude
+Commands:
+  sync      Sync claude-plugin assets to ~/.claude
 
-OPTIONS:
+Options (for sync):
   --only commands|skills|settings   Only sync specified asset type
   --dry-run                         Preview changes without writing
+
+Flags:
   --help                            Show this help message
+
+Examples:
+  ./install.sh sync
+  ./install.sh sync --dry-run
+  ./install.sh sync --only commands
 EOF
 }
 
@@ -30,15 +38,22 @@ if ! command -v python3 &>/dev/null; then
   exit 1
 fi
 
+COMMAND=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    sync)      COMMAND="sync" ;;
     --dry-run) DRY_RUN=true ;;
     --only)    ONLY="$2"; shift ;;
     --help)    usage; exit 0 ;;
-    *) echo "Unknown option: $1"; usage; exit 1 ;;
+    *) echo "Error: unknown command '$1'"; echo ""; usage; exit 1 ;;
   esac
   shift
 done
+
+if [[ -z "$COMMAND" ]]; then
+  usage
+  exit 0
+fi
 
 _rsync_sync() {
   local label="$1" src="$2" dest="$3"
@@ -121,7 +136,7 @@ main() {
   done
   echo ""
   echo "Done. Target: $CLAUDE_HOME"
-  $DRY_RUN && echo "(dry-run mode — no files were written)"
+  if $DRY_RUN; then echo "(dry-run mode — no files were written)"; fi
 }
 
 main
