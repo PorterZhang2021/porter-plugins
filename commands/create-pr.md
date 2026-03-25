@@ -67,14 +67,18 @@
      --body "<description>"
    ```
 
-7. **确认结果**
+7. **确认结果**（此步骤必须完整执行，不得省略）
    - 展示 PR URL
-   - 提示：PR 合并后可在本地运行以下命令清理分支：
-     ```bash
-     git checkout <base>
-     git pull origin <base>
-     git branch -d <current>
-     ```
+   - **必须**紧接着输出以下清理提示，不得因"任务完成"感而跳过：
+
+   ---
+   PR 合并后，执行以下命令清理本地分支：
+   ```bash
+   git checkout <base>
+   git pull origin <base>
+   git branch -d <current>
+   ```
+   ---
 
 ## 完整链路
 
