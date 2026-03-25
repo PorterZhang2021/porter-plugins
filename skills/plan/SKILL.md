@@ -20,18 +20,25 @@ allowed-tools:
 
 根据分支类型，读取对应文件并按其流程执行：
 
-| 类型 | 文件 |
-|------|------|
-| feat | `reference/feat.md` |
-| fix | `reference/fix.md` |
-| refactor | `reference/refactor.md` |
-| test | `reference/test.md` |
-| docs | `reference/docs.md` |
-| chore | `reference/chore.md` |
-| style | `reference/style.md` |
-| perf | `reference/perf.md` |
-| build | `reference/build.md` |
-| ci | `reference/ci.md` |
+| 类型 | 文件 | 特殊处理 |
+|------|------|---------|
+| feat | `reference/feat.md` | - |
+| fix | `reference/fix.md` | **使用 bug-analyzer agent 分析问题** |
+| refactor | `reference/refactor.md` | - |
+| test | `reference/test.md` | - |
+| docs | `reference/docs.md` | - |
+| chore | `reference/chore.md` | - |
+| style | `reference/style.md` | - |
+| perf | `reference/perf.md` | - |
+| build | `reference/build.md` | - |
+| ci | `reference/ci.md` | - |
+
+### Bug 修复特殊流程（fix 类型）
+
+对于 `fix` 类型分支，在生成 PLAN.md 前：
+1. 询问用户是否有错误信息、堆栈跟踪或日志
+2. 如果有，使用 **`delegate_subtask(agent_type='bug-analyzer')`** 进行深度分析
+3. 将分析结果整合到 PLAN.md 的根因分析和修复方案中
 
 ## 收尾规则
 
