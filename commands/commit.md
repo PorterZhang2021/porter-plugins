@@ -31,7 +31,22 @@ With options:
 
 ## What This Command Does
 
-1. **Pre-commit checks** (unless `--no-verify`):
+1. **Consistency check** (unless `--no-verify`):
+
+   Before staging anything, verify nothing was left behind:
+
+   - **Ripple effect**: Based on changed files, reason about related files that may need updating:
+     - Behavior or interface changed → is documentation in sync?
+     - Script or config changed → are usage instructions updated?
+     - New feature added → are entry points or index files updated?
+     - If gaps found, prompt the user to update before committing.
+
+   - **Plan/task sync** (only if a `plan/` directory exists in the project):
+     - Do design decisions or approach changes from this session appear in `PLAN.md`?
+     - Are all completed tasks marked `[x]` in `TASK.md`?
+     - If gaps found, prompt the user to backfill before committing.
+
+2. **Pre-commit checks** (unless `--no-verify`):
 
    Auto-detect project type and run corresponding checks:
 
@@ -45,16 +60,16 @@ With options:
 
    If none of the above are detected, or the corresponding script does not exist, ask the user whether to skip or specify a custom command.
 
-2. **File staging**:
+3. **File staging**:
    - Check staged files with `git status`
    - If no files staged, automatically add all modified/new files with `git add`
 
-3. **Change analysis**:
+4. **Change analysis**:
    - Run `git diff` to understand changes
    - Detect if multiple logical changes should be split
    - Suggest atomic commits when appropriate
 
-4. **Commit message creation**:
+5. **Commit message creation**:
    - Generate messages following Conventional Commits specification
    - Apply appropriate emoji prefixes
    - Add detailed body/footer in full style mode
@@ -229,9 +244,10 @@ Refs: RFC-6749, RFC-7636
 
 ## Workflow
 
-1. Analyze changes to determine commit type and scope
-2. Check if changes should be split into multiple commits
-3. For each commit:
+1. Run consistency check (ripple effect + plan/task sync)
+2. Analyze changes to determine commit type and scope
+3. Check if changes should be split into multiple commits
+4. For each commit:
    - Stage appropriate files
    - Generate commit message based on style setting
    - If full style, create detailed body and footer

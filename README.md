@@ -20,7 +20,7 @@
 ## 一键安装
 
 ```bash
-./install.sh
+./install.sh sync
 ```
 
 首次安装或后续同步均可使用，幂等执行。
@@ -28,10 +28,10 @@
 ### 可选参数
 
 ```bash
-./install.sh --dry-run              # 预览变更，不实际写入
-./install.sh --only commands        # 只同步 commands
-./install.sh --only skills          # 只同步 skills
-./install.sh --only settings        # 只合并 settings
+./install.sh sync --dry-run              # 预览变更，不实际写入
+./install.sh sync --only commands        # 只同步 commands
+./install.sh sync --only skills          # 只同步 skills
+./install.sh sync --only settings        # 只合并 settings
 ```
 
 ### 同步策略
