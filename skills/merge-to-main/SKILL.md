@@ -2,83 +2,39 @@
 name: merge-to-main
 description: 将当前分支合并回主分支（main/master），保留分支
 allowed-tools:
-  - Shell
-  - AskUserQuestion
+  - Bash
 ---
 
 # Merge to Main Skill
 
 将当前分支合并回主分支（main/master），保留分支。
 
-## 步骤
+## 执行
 
-1. **确认当前分支**
-   - 获取当前分支名
-   - 检测远端默认主分支名，记为 `<base>`（参见步骤 3）
-   - 如果已在 `<base>` 上，终止并提示用户
+直接运行脚本：
 
-2. **检查工作区是否干净**
-   - 运行 `git status`
-   - 如有未提交的变更，提示用户先使用 `/commit` 提交，终止流程
+```bash
+bash "$(git rev-parse --show-toplevel)/scripts/merge-to-main.sh"
+```
 
-3. **同步远端并确保当前分支包含本地 master 最新内容**
-   - 先检测远端默认主分支名（main 或 master）：
-     ```bash
-     git remote show origin | grep 'HEAD branch' | awk '{print $NF}'
-     ```
-   - 拉取远端最新状态：
-     ```bash
-     git fetch origin <base>
-     ```
-   - 将本地 master 同步到 `origin/<base>`（ff-only，保证安全）：
-     ```bash
-     git -C $MAIN_REPO merge --ff-only origin/<base>
-     ```
-     - 成功 → 本地 master 已是最新
-     - 失败（本地 master 与远端分叉）→ 终止，提示用户：`本地 <base> 与 origin/<base> 已分叉，请先手动排查`
+脚本会自动完成：
+1. 确认当前分支不是 master
+2. 检查工作区是否干净
+3. `git fetch origin <base>`
+4. 本地 master `--ff-only` 同步到 `origin/<base>`
+5. 检查 feature 分支是否落后本地 master，落后则自动 `git rebase <base>`
+6. `git merge --ff-only` 保证线性历史合并
 
-   - 检查当前 feature 分支是否落后于本地 master：
-     ```bash
-     git log HEAD..<base> --oneline
-     ```
-   - 判断结果：
-     - **无输出**（feature 已包含 master 所有提交，纯 ahead）→ 继续执行
-     - **有输出**（feature 落后 master）→ rebase 到最新 master：
-       ```bash
-       git rebase <base>
-       ```
-       - rebase 成功 → 继续执行
-       - rebase 有冲突 → 执行 `git rebase --abort`，终止并提示用户：`rebase 发生冲突，请手动解决后重新运行 /merge-to-main`
+## 异常处理
 
-4. **生成分支工作摘要**
-   - 运行 `git log <base>..<current-branch> --oneline` 获取本分支所有提交
-   - 基于提交记录，用自然语言总结本次分支完成了哪些工作
-   - **直接执行合并，无需询问用户确认**（仅在发生冲突或异常时中止并告知用户）
+脚本会在以下情况自动终止并说明原因：
+- 工作区有未提交变更
+- 本地 master 与远端分叉（需手动排查）
+- rebase 发生冲突（自动 abort，提示手动解决）
 
-5. **执行合并**
+## 下一步
 
-   获取主仓库根目录（worktree 场景下不等于当前 pwd）：
-   ```bash
-   MAIN_REPO=$(git worktree list | head -1 | awk '{print $1}')
-   ```
-
-   在主仓库上以 fast-forward only 方式执行 merge，保证线性历史：
-   ```bash
-   git -C $MAIN_REPO merge --ff-only <current-branch>
-   ```
-
-   - merge 成功 → 继续步骤 6
-   - `--ff-only` 失败（master 已分叉）→ 终止，提示用户：
-     `<base> 与当前分支已分叉，无法 fast-forward。请先在当前分支执行 git rebase <base>，再重新运行 /merge-to-main`
-   - 其他错误 → 终止并展示错误信息
-
-6. **确认结果**
-   - 展示主仓库最新的 git log（最近 3 条）：
-     ```bash
-     git -C $MAIN_REPO log --oneline -3
-     ```
-   - 如需开始新功能，根据场景选择收尾方式：
-     ```
-     /new-branch → /plan → /task → /execute → /commit → /merge-to-main  # 直接合并（个人项目）
-     /new-branch → /plan → /task → /execute → /commit → /create-pr       # 开 PR（需要 Review）
-     ```
+```
+git push origin <base>   # 推送到远端
+/new-branch              # 开始新功能
+```
