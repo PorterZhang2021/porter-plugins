@@ -45,19 +45,25 @@ allowed-tools:
 
 5. **执行合并**
 
-   先确认是否可以 fast-forward：
+   获取主仓库根目录（worktree 场景下不等于当前 pwd）：
    ```bash
-   git merge-base --is-ancestor <base> <current-branch>
+   MAIN_REPO=$(git worktree list | head -1 | awk '{print $1}')
    ```
-   - 返回 0（fast-forward）：直接移动分支指针，无需 checkout：
-     ```bash
-     git branch -f <base> <current-branch>
-     ```
-   - 返回非 0（已分叉）：说明 <base> 有当前分支不包含的提交，终止并告知用户
+
+   在主仓库上执行 merge（无需 checkout，不影响当前 worktree）：
+   ```bash
+   git -C $MAIN_REPO merge <current-branch>
+   ```
+
+   - merge 成功 → 继续步骤 6
+   - 发生冲突 → 立即终止，提示用户：`合并发生冲突，请切换到 <base> 分支手动解决后再继续`
+   - 其他错误 → 终止并展示错误信息
 
 6. **确认结果**
-   - 展示当前所在分支（应为 `<base>`）
-   - 展示最新的 git log（最近 3 条）
+   - 展示主仓库最新的 git log（最近 3 条）：
+     ```bash
+     git -C $MAIN_REPO log --oneline -3
+     ```
    - 如需开始新功能，根据场景选择收尾方式：
      ```
      /new-branch → /plan → /task → /execute → /commit → /merge-to-main  # 直接合并（个人项目）
