@@ -21,7 +21,7 @@ allowed-tools:
    - 运行 `git status`
    - 如有未提交的变更，提示用户先使用 `/commit` 提交，终止流程
 
-3. **对比本地与远端主分支**
+3. **拉取远端并确保当前分支包含最新内容**
    - 先检测远端默认主分支名（main 或 master）：
      ```bash
      git remote show origin | grep 'HEAD branch' | awk '{print $NF}'
@@ -30,13 +30,18 @@ allowed-tools:
      ```bash
      git fetch origin <base>
      ```
-   - 检查本地与远端的差异：
+   - 检查 `origin/<base>` 是否有当前分支不包含的提交：
      ```bash
-     git log origin/<base>...<base> --left-right --oneline
+     git log HEAD..origin/<base> --oneline
      ```
    - 判断结果：
-     - **本地领先远端**（只有 `>` 标记）→ 正常，继续执行
-     - **远端领先本地或两者分叉**（存在 `<` 标记）→ 终止，提示用户手动检查：`origin/<base> 有本地未包含的提交，请先排查后再合并`
+     - **无输出**（当前分支已包含远端所有提交）→ 正常，继续执行
+     - **有输出**（远端领先）→ 将当前分支 rebase 到远端最新：
+       ```bash
+       git rebase origin/<base>
+       ```
+       - rebase 成功 → 继续执行
+       - rebase 有冲突 → 执行 `git rebase --abort`，终止并提示用户：`rebase 发生冲突，请手动解决后重新运行 /merge-to-main`
 
 4. **生成分支工作摘要**
    - 运行 `git log <base>..<current-branch> --oneline` 获取本分支所有提交
