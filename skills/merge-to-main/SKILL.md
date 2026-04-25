@@ -50,13 +50,14 @@ allowed-tools:
    MAIN_REPO=$(git worktree list | head -1 | awk '{print $1}')
    ```
 
-   在主仓库上执行 merge（无需 checkout，不影响当前 worktree）：
+   在主仓库上以 fast-forward only 方式执行 merge，保证线性历史：
    ```bash
-   git -C $MAIN_REPO merge <current-branch>
+   git -C $MAIN_REPO merge --ff-only <current-branch>
    ```
 
    - merge 成功 → 继续步骤 6
-   - 发生冲突 → 立即终止，提示用户：`合并发生冲突，请切换到 <base> 分支手动解决后再继续`
+   - `--ff-only` 失败（master 已分叉）→ 终止，提示用户：
+     `<base> 与当前分支已分叉，无法 fast-forward。请先在当前分支执行 git rebase <base>，再重新运行 /merge-to-main`
    - 其他错误 → 终止并展示错误信息
 
 6. **确认结果**
