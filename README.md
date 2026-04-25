@@ -6,9 +6,8 @@
 
 | 目录 | 内容 |
 |------|------|
-| `skills/` | 14 个工作流 Skill |
+| `skills/` | 14 个工作流 Skill（部分含同目录自动化脚本） |
 | `agents/` | 5 个自定义 Agent |
-| `scripts/` | 自动化脚本（供 skill 调用） |
 | `hooks/` | 插件 Hooks 配置（hooks.json） |
 | `.claude-plugin/` | 插件元数据（plugin.json、marketplace.json） |
 | `.claude/` | 项目宪法（constitution.md） |

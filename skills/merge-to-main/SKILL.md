@@ -11,10 +11,10 @@ allowed-tools:
 
 ## 执行
 
-直接运行脚本：
+直接运行与本 skill 同目录的脚本（将 `<skill-base-dir>` 替换为本文件所在目录）：
 
 ```bash
-bash "$(git rev-parse --show-toplevel)/scripts/merge-to-main.sh"
+bash "<skill-base-dir>/merge-to-main.sh"
 ```
 
 脚本会自动完成：
