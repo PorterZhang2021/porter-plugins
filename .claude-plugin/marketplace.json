@@ -1,0 +1,13 @@
+{
+  "name": "porter-plugins",
+  "owner": {
+    "name": "PorterZhang2021"
+  },
+  "plugins": [
+    {
+      "name": "porter-claude-plugin",
+      "source": "./",
+      "description": "个人 Claude Code 工作流插件，含自定义 Skills、Commands、Agents"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "name": "porter-claude-plugin",
+  "version": "1.0.0",
+  "description": "个人 Claude Code 工作流插件，含自定义 Skills、Commands、Agents",
+  "author": {
+    "name": "PorterZhang2021"
+  },
+  "repository": "https://github.com/PorterZhang2021/claude-plugins",
+  "keywords": ["workflow", "git", "commit", "plan", "skills"]
+}
