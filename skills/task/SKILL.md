@@ -69,6 +69,6 @@ TASK.md 文件头格式见 `templates/task_header.md`。
 
 ## 收尾
 
-- 全部任务逐一与用户确认后，写入 `plan/<type>/<branch-name>/TASK.md`
+- 生成完整任务清单，展示全部内容，直接写入 `plan/<type>/<branch-name>/TASK.md`
 - 提示使用 `/commit` 提交
-- 提示下一步运行 `/execute` 开始实现
+- 询问：**"任务清单已生成，是否运行 `/execute` 开始实现？"**

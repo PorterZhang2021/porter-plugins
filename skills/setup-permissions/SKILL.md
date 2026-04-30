@@ -19,7 +19,7 @@ description: 为当前项目结对配置 .claude/settings.json 权限规则
 
 ## 配置流程
 
-每一类逐步确认，不要一次性全部展示。
+逐类收集用户意图，不等待每类确认，全部收集完后统一生成配置。
 
 ### Step 1：默认模式
 
@@ -36,7 +36,7 @@ description: 为当前项目结对配置 .claude/settings.json 权限规则
 
 ### Step 2：allow 列表
 
-按以下分类逐一确认，每类确认后再进入下一类：
+按以下分类依次询问（不等确认，连续询问完毕后统一生成配置）：
 
 1. **文件操作** — `Read` / `Edit` / `Write` / `Glob` / `Grep`，询问是否限制到项目目录
 2. **Git 操作** — 日常命令放行，危险操作（push/reset --hard/branch -D）建议放入 ask
@@ -63,7 +63,4 @@ description: 为当前项目结对配置 .claude/settings.json 权限规则
 
 - 汇总展示完整配置，等待用户最终确认
 - 写入 `.claude/settings.json`
-- 提示使用 `/commit` 提交，再运行 `/merge-to-main` 合并回主分支
-
-**链路 1 完成。开始功能开发：**
-`/new-branch <type> <name>` → `/plan` → `/task` → `/execute` → `/commit` → `/merge-to-main`
+- 询问：**"权限配置已写入，是否运行 `/commit` 提交？"**
