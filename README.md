@@ -18,10 +18,16 @@
 
 ## 安装
 
-通过 Claude Code 插件市场安装：
+**第一步：添加市场源**
 
 ```bash
-claude plugin add https://github.com/PorterZhang2021/claude-plugins
+claude plugin marketplace add https://github.com/PorterZhang2021/claude-plugins
+```
+
+**第二步：安装插件**
+
+```bash
+claude plugin install porter-claude-plugin
 ```
 
 或手动克隆后将 `skills/` 和 `agents/` 目录内容复制到对应的 `~/.claude/` 路径。
