@@ -21,7 +21,7 @@
 **第一步：添加市场源**
 
 ```bash
-claude plugin marketplace add https://github.com/PorterZhang2021/claude-plugins
+claude plugin marketplace add https://github.com/PorterZhang2021/porter-plugins
 ```
 
 **第二步：安装插件**

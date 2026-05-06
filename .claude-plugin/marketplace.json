@@ -8,7 +8,7 @@
       "name": "porter-claude-plugin",
       "source": {
         "source": "github",
-        "repo": "PorterZhang2021/claude-plugins"
+        "repo": "PorterZhang2021/porter-plugins"
       },
       "description": "个人 Claude Code 工作流插件，含自定义 Skills、Commands、Agents"
     }
