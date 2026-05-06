@@ -6,7 +6,7 @@
 
 | 目录 | 内容 |
 |------|------|
-| `skills/` | 14 个工作流 Skill（部分含同目录自动化脚本） |
+| `skills/` | 15 个工作流 Skill（部分含同目录自动化脚本） |
 | `agents/` | 5 个自定义 Agent |
 | `hooks/` | 插件 Hooks 配置（hooks.json） |
 | `.claude-plugin/` | 插件元数据（plugin.json、marketplace.json） |
@@ -50,6 +50,7 @@ claude plugin install porter-claude-plugin
 | `explain` | 生成项目解释文档，保存到 explain/ 目录 |
 | `explain-explore` | 探索文件，收集文档所需上下文，返回结构化 findings |
 | `explain-write` | 基于 findings 生成并写入解释文档 |
+| `learn-english` | 意图确认 + 英语纠错辅助，防止英文表达不精确导致执行偏差 |
 
 ### 推荐工作流
 
