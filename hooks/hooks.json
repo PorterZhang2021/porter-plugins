@@ -1,13 +1,15 @@
 {
-  "PreToolUse": [
-    {
-      "matcher": "Write|Edit|MultiEdit",
-      "hooks": [
-        {
-          "type": "command",
-          "command": "bash -c '\nINPUT=$(cat)\nFILE_PATH=$(echo \"$INPUT\" | python3 -c \"import sys,json; d=json.load(sys.stdin); print(d.get(\\\"file_path\\\", \\\"\\\"))\" 2>/dev/null)\n[ -z \"$FILE_PATH\" ] && exit 0\nCURRENT_DIR=$(pwd)\n[[ \"$CURRENT_DIR\" != *\"/.claude/worktrees/\"* ]] && exit 0\nWORKTREE_DIR=$(echo \"$CURRENT_DIR\" | grep -o \".*/\\.claude/worktrees/[^/]*\" )\n[[ \"$FILE_PATH\" == \"$WORKTREE_DIR\"* ]] && exit 0\necho \"[hook] 警告：当前在 worktree ($WORKTREE_DIR)，但写入路径指向 worktree 外部：$FILE_PATH\" >&2\nexit 1\n'"
-        }
-      ]
-    }
-  ]
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c '\nINPUT=$(cat)\nFILE_PATH=$(echo \"$INPUT\" | python3 -c \"import sys,json; d=json.load(sys.stdin); print(d.get(\\\"file_path\\\", \\\"\\\"))\" 2>/dev/null)\n[ -z \"$FILE_PATH\" ] && exit 0\nCURRENT_DIR=$(pwd)\n[[ \"$CURRENT_DIR\" != *\"/.claude/worktrees/\"* ]] && exit 0\nWORKTREE_DIR=$(echo \"$CURRENT_DIR\" | grep -o \".*/\\.claude/worktrees/[^/]*\" )\n[[ \"$FILE_PATH\" == \"$WORKTREE_DIR\"* ]] && exit 0\necho \"[hook] 警告：当前在 worktree ($WORKTREE_DIR)，但写入路径指向 worktree 外部：$FILE_PATH\" >&2\nexit 1\n'"
+          }
+        ]
+      }
+    ]
+  }
 }
