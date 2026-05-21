@@ -145,7 +145,7 @@ skills/web-service-tech-selection/
 | `explain` | Claude Code | 生成项目解释文档。 |
 | `explain-explore` | Claude Code | 探索文件，收集文档所需上下文，返回结构化 findings。 |
 | `explain-write` | Claude Code | 基于 findings 生成并写入解释文档。 |
-| `learn-english` | Claude Code | 意图确认和英语纠错辅助，防止英文表达不精确导致执行偏差。 |
+| `learn-english` | Claude Code + Codex | 意图确认和英语纠错辅助，防止英文表达不精确导致执行偏差。 |
 | `web-service-tech-selection` | Claude Code + Codex | 为 Web 后端 / HTTP API 服务结对生成或审查前置技术选型文档。 |
 
 ## Recommended Workflows
