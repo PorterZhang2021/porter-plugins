@@ -2,13 +2,13 @@
 
 个人 AI 编程助手配置仓库，用来沉淀可复用的 Skills、Agents、Hooks 和协作规则。
 
-当前仓库首先支持 Claude Code plugin，同时也把 `skills/<skill-name>/` 设计成可被 Codex 单独安装和复用的 skill 目录。
+当前仓库首先支持 Claude Code plugin；其中一部分 `skills/<skill-name>/` 也可以被 Codex 单独安装和复用。
 
 ## Repository Layout
 
 | 目录 | 内容 |
 | --- | --- |
-| `skills/` | 16 个工作流 Skill，单个目录可被 Claude Code 和 Codex 复用。 |
+| `skills/` | 16 个工作流 Skill。Claude Code 可通过插件整体使用，部分 Skill 可被 Codex 单独安装。 |
 | `agents/` | 5 个 Claude Code 自定义 Agent。 |
 | `hooks/` | Claude Code hooks 配置。 |
 | `.claude-plugin/` | Claude Code 插件元数据。 |
@@ -53,7 +53,7 @@ hooks/   -> ~/.claude/hooks/
 
 ## Codex
 
-Codex 不安装整个 Claude Code plugin，但可以安装本仓库中的单个 skill 目录。
+Codex 不安装整个 Claude Code plugin，但可以安装本仓库中适配 Codex 的单个 skill 目录。
 
 适用目录结构：
 
@@ -68,6 +68,7 @@ skills/<skill-name>/
 
 ```text
 目标 skill 已提交并推送到 GitHub。
+目标 skill 在下方 Skills 表中标记为 Claude Code + Codex。
 ```
 
 在 Codex 中使用内置 `skill-installer`，提供 GitHub repo 和 skill 路径：
@@ -128,24 +129,24 @@ skills/web-service-tech-selection/
 
 ## Skills
 
-| Skill | 说明 |
-| --- | --- |
-| `new-branch` | 创建符合规范的 Git 功能分支。 |
-| `plan` | 按分支类型结对生成规划文档 PLAN.md。 |
-| `task` | 按 TDD 结构生成任务清单 TASK.md。 |
-| `execute` | 按分支类型节奏逐任务执行 TASK.md。 |
-| `commit` | 按 Conventional Commits 规范创建格式化提交。 |
-| `merge-to-main` | 将当前分支合并回主分支。 |
-| `create-pr` | 推送分支并创建 Pull Request。 |
-| `analyze-bug` | 复现、定位根因并输出 Bug 分析报告。 |
-| `claude-md` | 为新项目结对编写 CLAUDE.md 操作手册。 |
-| `constitution` | 为新项目结对编写开发宪法。 |
-| `setup-permissions` | 为当前项目配置 `.claude/settings.json` 权限规则。 |
-| `explain` | 生成项目解释文档。 |
-| `explain-explore` | 探索文件，收集文档所需上下文，返回结构化 findings。 |
-| `explain-write` | 基于 findings 生成并写入解释文档。 |
-| `learn-english` | 意图确认和英语纠错辅助，防止英文表达不精确导致执行偏差。 |
-| `web-service-tech-selection` | 为 Web 后端 / HTTP API 服务结对生成或审查前置技术选型文档。 |
+| Skill | 适用平台 | 说明 |
+| --- | --- | --- |
+| `new-branch` | Claude Code | 创建符合规范的 Git 功能分支。 |
+| `plan` | Claude Code | 按分支类型结对生成规划文档 PLAN.md。 |
+| `task` | Claude Code | 按 TDD 结构生成任务清单 TASK.md。 |
+| `execute` | Claude Code | 按分支类型节奏逐任务执行 TASK.md。 |
+| `commit` | Claude Code | 按 Conventional Commits 规范创建格式化提交。 |
+| `merge-to-main` | Claude Code | 将当前分支合并回主分支。 |
+| `create-pr` | Claude Code | 推送分支并创建 Pull Request。 |
+| `analyze-bug` | Claude Code | 复现、定位根因并输出 Bug 分析报告。 |
+| `claude-md` | Claude Code | 为新项目结对编写 CLAUDE.md 操作手册。 |
+| `constitution` | Claude Code | 为新项目结对编写开发宪法。 |
+| `setup-permissions` | Claude Code | 为当前项目配置 `.claude/settings.json` 权限规则。 |
+| `explain` | Claude Code | 生成项目解释文档。 |
+| `explain-explore` | Claude Code | 探索文件，收集文档所需上下文，返回结构化 findings。 |
+| `explain-write` | Claude Code | 基于 findings 生成并写入解释文档。 |
+| `learn-english` | Claude Code | 意图确认和英语纠错辅助，防止英文表达不精确导致执行偏差。 |
+| `web-service-tech-selection` | Claude Code + Codex | 为 Web 后端 / HTTP API 服务结对生成或审查前置技术选型文档。 |
 
 ## Recommended Workflows
 
