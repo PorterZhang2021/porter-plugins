@@ -132,7 +132,7 @@ skills/web-service-tech-selection/
 | Skill | 适用平台 | 说明 |
 | --- | --- | --- |
 | `new-branch` | Claude Code | 创建符合规范的 Git 功能分支。 |
-| `plan` | Claude Code | 按分支类型结对生成规划文档 PLAN.md。 |
+| `plan` | Claude Code + Codex | 按分支类型结对生成规划文档 PLAN.md。 |
 | `task` | Claude Code | 按 TDD 结构生成任务清单 TASK.md。 |
 | `execute` | Claude Code | 按分支类型节奏逐任务执行 TASK.md。 |
 | `commit` | Claude Code | 按 Conventional Commits 规范创建格式化提交。 |
