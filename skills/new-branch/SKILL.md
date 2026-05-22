@@ -40,8 +40,10 @@ Help the user start a new Git branch following conventional naming.
    进入后执行：
    ```bash
    git branch -m <type>/<name>
+   git rebase master
    ```
    确保分支名符合 `<type>/<name>` 命名规范（EnterWorktree 可能用随机名）。
+   `git rebase master` 确保 worktree 包含本地 master 的最新提交（EnterWorktree 默认基于 origin/master，可能落后于本地 master）。
 
 4. **确认成功** 并展示当前分支名，提醒使用 `/commit` 提交。
 
