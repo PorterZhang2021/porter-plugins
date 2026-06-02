@@ -2,17 +2,21 @@
 
 个人 AI 编程助手配置仓库，用来沉淀可复用的 Skills、Agents、Hooks 和协作规则。
 
-当前仓库首先支持 Claude Code plugin；其中一部分 `skills/<skill-name>/` 也可以被 Codex 单独安装和复用。
+当前仓库同时维护 Claude Code 和 Codex 两套插件入口：
+
+- Claude Code：`porter-claude-plugin`
+- Codex：`porter-codex-plugin`
 
 ## Repository Layout
 
 | 目录 | 内容 |
 | --- | --- |
-| `skills/` | 16 个工作流 Skill。Claude Code 可通过插件整体使用，部分 Skill 可被 Codex 单独安装。 |
-| `agents/` | 5 个 Claude Code 自定义 Agent。 |
-| `hooks/` | Claude Code hooks 配置。 |
-| `.claude-plugin/` | Claude Code 插件元数据。 |
-| `.claude/` | 项目宪法和 Claude Code 项目配置。 |
+| `plugins/porter-claude-plugin/` | Claude Code 插件，包含 Skills、Agents、Hooks 和插件元数据。 |
+| `plugins/porter-codex-plugin/` | Codex 插件，包含全量工作流 Skills 和 Codex 插件元数据。 |
+| `.claude-plugin/marketplace.json` | Claude Code marketplace 入口。 |
+| `.agents/plugins/marketplace.json` | Codex repo-local marketplace 入口。 |
+| `.claude/` | 当前仓库自身的 Claude Code 项目配置。 |
+| `AGENTS.md` | 当前仓库自身的 Codex 协作说明。 |
 | `sync.sh` | 跨 AI 工具配置同步脚本。 |
 
 ## Claude Code
@@ -39,12 +43,12 @@ claude plugin install porter-claude-plugin
 
 ### 手动安装
 
-也可以手动克隆本仓库后，将目录内容复制到 Claude Code 对应配置目录：
+也可以手动克隆本仓库后，将 Claude 插件内容复制到 Claude Code 对应配置目录：
 
 ```text
-skills/  -> ~/.claude/skills/
-agents/  -> ~/.claude/agents/
-hooks/   -> ~/.claude/hooks/
+plugins/porter-claude-plugin/skills/  -> ~/.claude/skills/
+plugins/porter-claude-plugin/agents/  -> ~/.claude/agents/
+plugins/porter-claude-plugin/hooks/   -> ~/.claude/hooks/
 ```
 
 ### 验证 Claude Code 安装
@@ -53,100 +57,55 @@ hooks/   -> ~/.claude/hooks/
 
 ## Codex
 
-Codex 不安装整个 Claude Code plugin，但可以安装本仓库中适配 Codex 的单个 skill 目录。
+Codex 使用独立插件入口，不再推荐逐个安装单个 skill。
 
-适用目录结构：
+### 安装插件
 
-```text
-skills/<skill-name>/
-  SKILL.md
-```
-
-### 使用 skill-installer 安装
-
-前提：
-
-```text
-目标 skill 已提交并推送到 GitHub。
-目标 skill 在下方 Skills 表中标记为 Claude Code + Codex。
-```
-
-在 Codex 中使用内置 `skill-installer`，提供 GitHub repo 和 skill 路径：
-
-```text
-使用 skill-installer，从 PorterZhang2021/porter-plugins 安装 skills/web-service-tech-selection
-```
-
-等价安装源：
-
-```text
-repo: PorterZhang2021/porter-plugins
-path: skills/web-service-tech-selection
-```
-
-安装结果会写入：
-
-```text
-~/.codex/skills/web-service-tech-selection/
-  SKILL.md
-```
-
-安装完成后重启 Codex，使新 skill 生效。
-
-### 本地验证安装流程
-
-如果只是验证 `skill-installer` 是否可用，可以使用临时安装名，避免覆盖已有 skill：
+添加当前仓库作为 repo-local marketplace：
 
 ```bash
-python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
-  --repo PorterZhang2021/porter-plugins \
-  --ref master \
-  --path skills/plan \
-  --name codex-install-test-skill
+codex plugin marketplace add /Users/poterzhang/AIProjects/claude-plugins
 ```
 
-验证完成后删除临时 skill：
+安装 Codex 插件：
 
 ```bash
-rm -rf ~/.codex/skills/codex-install-test-skill
+codex plugin add porter-codex-plugin@porter-plugins
 ```
 
-### 手动安装单个 Skill
+安装后开启新线程，使插件 skills 生效。
 
-也可以直接复制单个 skill 目录：
+### Codex 适配说明
 
-```text
-skills/web-service-tech-selection/
-```
-
-到：
-
-```text
-~/.codex/skills/web-service-tech-selection/
-```
-
-复制后重启 Codex。
+- Codex 插件包含所有现有工作流 skill。
+- Claude 专属入口在 Codex 插件中使用 Codex 专属名称：
+  - `claude-md` 对标为 `codex-md`
+  - `setup-permissions` 对标为 `codex-permissions`
+- Codex 版 `new-branch` 使用 `.codex/worktrees/<type>/<name>` worktree 模型。
+- Codex 版执行类 skill 使用 Codex 原生命令、审批和对话能力替代 Claude 专属工具。
 
 ## Skills
 
-| Skill | 适用平台 | 说明 |
-| --- | --- | --- |
-| `new-branch` | Claude Code | 创建符合规范的 Git 功能分支。 |
-| `plan` | Claude Code + Codex | 按分支类型结对生成规划文档 PLAN.md。 |
-| `task` | Claude Code | 按 TDD 结构生成任务清单 TASK.md。 |
-| `execute` | Claude Code | 按分支类型节奏逐任务执行 TASK.md。 |
-| `commit` | Claude Code | 按 Conventional Commits 规范创建格式化提交。 |
-| `merge-to-main` | Claude Code | 将当前分支合并回主分支。 |
-| `create-pr` | Claude Code | 推送分支并创建 Pull Request。 |
-| `analyze-bug` | Claude Code | 复现、定位根因并输出 Bug 分析报告。 |
-| `claude-md` | Claude Code | 为新项目结对编写 CLAUDE.md 操作手册。 |
-| `constitution` | Claude Code | 为新项目结对编写开发宪法。 |
-| `setup-permissions` | Claude Code | 为当前项目配置 `.claude/settings.json` 权限规则。 |
-| `explain` | Claude Code | 生成项目解释文档。 |
-| `explain-explore` | Claude Code | 探索文件，收集文档所需上下文，返回结构化 findings。 |
-| `explain-write` | Claude Code | 基于 findings 生成并写入解释文档。 |
-| `learn-english` | Claude Code + Codex | 意图确认和英语纠错辅助，防止英文表达不精确导致执行偏差。 |
-| `web-service-tech-selection` | Claude Code + Codex | 为 Web 后端 / HTTP API 服务结对生成或审查前置技术选型文档。 |
+| Skill | Claude Code | Codex | 说明 |
+| --- | --- | --- | --- |
+| `new-branch` | 是 | 是 | 创建符合规范的 Git 功能分支；Codex 版使用 `.codex/worktrees/`。 |
+| `plan` | 是 | 是 | 按分支类型结对生成规划文档 PLAN.md。 |
+| `task` | 是 | 是 | 按 TDD 结构生成任务清单 TASK.md。 |
+| `execute` | 是 | 是 | 按分支类型节奏逐任务执行 TASK.md。 |
+| `commit` | 是 | 是 | 按 Conventional Commits 规范创建格式化提交。 |
+| `merge-to-main` | 是 | 是 | 将当前分支合并回主分支。 |
+| `create-pr` | 是 | 是 | 推送分支并创建 Pull Request。 |
+| `analyze-bug` | 是 | 是 | 复现、定位根因并输出 Bug 分析报告。 |
+| `claude-md` | 是 | 否 | 为 Claude Code 项目生成 CLAUDE.md。 |
+| `codex-md` | 否 | 是 | 为 Codex 项目生成 AGENTS.md。 |
+| `constitution` | 是 | 是 | 为新项目结对编写开发宪法。 |
+| `setup-permissions` | 是 | 否 | 为 Claude Code 项目配置 `.claude/settings.json`。 |
+| `codex-permissions` | 否 | 是 | 为 Codex 项目配置 `.codex/config.toml` 或 AGENTS.md 权限规则。 |
+| `explain` | 是 | 是 | 生成项目解释文档。 |
+| `explain-explore` | 是 | 是 | 探索文件，收集文档所需上下文，返回结构化 findings。 |
+| `explain-write` | 是 | 是 | 基于 findings 生成并写入解释文档。 |
+| `learn-english` | 是 | 是 | 意图确认和英语纠错辅助，防止英文表达不精确导致执行偏差。 |
+| `web-service-tech-selection` | 是 | 是 | 为 Web 后端 / HTTP API 服务结对生成或审查前置技术选型文档。 |
 
 ## Recommended Workflows
 
@@ -162,7 +121,15 @@ Bug 修复：
 /new-branch -> /analyze-bug -> /task -> /execute -> /commit -> /merge-to-main
 ```
 
+Codex 项目初始化：
+
+```text
+/constitution -> /codex-md -> /codex-permissions
+```
+
 ## Agents
+
+Claude Code 插件包含以下自定义 Agent：
 
 | Agent | 说明 |
 | --- | --- |
@@ -172,9 +139,11 @@ Bug 修复：
 | `story-generator` | 从各类输入生成带验收标准的用户故事。 |
 | `ui-sketcher` | 将需求转化为 ASCII 界面设计和交互规范。 |
 
+Codex 插件当前只打包 Skills，不打包 Claude Code Agents 或 Hooks。
+
 ## Sync
 
-`sync.sh` 可以将其他 AI 工具的配置导入本仓库。
+`sync.sh` 可以将其他 AI 工具的配置导入本仓库对应插件目录。
 
 查看支持的工具：
 
@@ -191,22 +160,17 @@ Bug 修复：
 直接指定工具：
 
 ```bash
-./sync.sh kimi
-```
-
-使用自定义路径：
-
-```bash
-./sync.sh --path ~/.custom/kimi kimi
+./sync.sh codex
+./sync.sh claude
 ```
 
 支持工具：
 
-| 工具 | 默认来源 |
-| --- | --- |
-| `kimi` | `~/.kimi` |
-| `codex` | `~/.codex` |
-| `claude` | `~/.claude` |
+| 工具 | 默认来源 | 默认目标 |
+| --- | --- | --- |
+| `kimi` | `~/.kimi` | 当前仓库根目录的同名目录 |
+| `codex` | `~/.codex` | `plugins/porter-codex-plugin/` |
+| `claude` | `~/.claude` | `plugins/porter-claude-plugin/` |
 
 ### Sync Ignore
 

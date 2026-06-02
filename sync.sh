@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Claude Plugins 跨平台同步工具
+# AI Workflow Plugins 跨平台同步工具
 # 支持从 kimi/codex/claude 导入配置到当前仓库
 
 SCRIPT_NAME="$(basename "$0")"
@@ -27,10 +27,20 @@ get_tool_desc() {
     esac
 }
 
+# 获取同步目标根目录
+get_dest_root() {
+    case "$1" in
+        codex) echo "./plugins/porter-codex-plugin" ;;
+        claude) echo "./plugins/porter-claude-plugin" ;;
+        kimi) echo "." ;;
+        *) echo "." ;;
+    esac
+}
+
 # 显示帮助
 show_help() {
     cat <<EOF
-Claude Plugins 跨平台同步工具 v${VERSION}
+AI Workflow Plugins 跨平台同步工具 v${VERSION}
 
 用法: ${SCRIPT_NAME} [OPTIONS] [TOOL]
 
@@ -265,8 +275,8 @@ interactive_exclude() {
         for item in "${items[@]:0:6}"; do display+=("$item"); done
         echo "  ${display[*]}, ..." >&2
         echo "" >&2
-        echo "内容较多，如需排除特定内容，请在仓库创建 .syncignore 文件：" >&2
-        echo "  echo \"draft/\" >> skills/.syncignore" >&2
+        echo "内容较多，如需排除特定内容，请在目标目录创建 .syncignore 文件。" >&2
+        echo "例如 Codex skills: plugins/porter-codex-plugin/skills/.syncignore" >&2
         echo "" >&2
         read -rp "按回车继续..."
     fi
@@ -325,7 +335,9 @@ run_sync() {
     
     local dir_name
     dir_name=$(basename "$src_path")
-    local dest_path="./$dir_name"
+    local dest_root
+    dest_root=$(get_dest_root "$tool")
+    local dest_path="$dest_root/$dir_name"
     # 使用当前仓库的 .syncignore 来决定清理和排除
     local syncignore_path="$dest_path/.syncignore"
     
@@ -389,8 +401,8 @@ main() {
         esac
     done
     
-    echo "Claude Plugins 跨平台同步工具"
-    echo "==========================="
+    echo "AI Workflow Plugins 跨平台同步工具"
+    echo "================================"
     echo ""
     
     # 确定工具
@@ -444,9 +456,9 @@ main() {
             SYNC_TASKS+=("$tool|$full_path")
             
             echo "------------------------"
-            echo "同步: $tool/$dir → 当前仓库/$dir/"
+            echo "同步: $tool/$dir → 当前仓库/$(get_dest_root "$tool")/$dir/"
             echo "来源: $full_path"
-            echo "目标: ./$dir/"
+            echo "目标: $(get_dest_root "$tool")/$dir/"
             [[ -n "$ignore_rules" ]] && echo "排除: $ignore_rules"
             echo "------------------------"
             echo ""

@@ -1,0 +1,20 @@
+{
+  "name": "porter-plugins",
+  "interface": {
+    "displayName": "Porter Plugins"
+  },
+  "plugins": [
+    {
+      "name": "porter-codex-plugin",
+      "source": {
+        "source": "local",
+        "path": "./plugins/porter-codex-plugin"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
