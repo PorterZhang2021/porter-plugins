@@ -73,5 +73,5 @@ Codex：可以继续运行 /task 或使用 task skill。
 完整链路：
 
 ```text
-plan -> task -> execute -> commit -> merge-to-main
+plan -> task -> execute -> review? -> commit -> merge-to-main
 ```

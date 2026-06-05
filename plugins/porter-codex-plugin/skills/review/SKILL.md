@@ -1,0 +1,113 @@
+---
+name: review
+description: 提交前使用独立审查上下文检查本次实现或修复
+---
+
+# Review
+
+在 `/execute` 之后、`/commit` 之前，对当前 worktree 中本次实现或修复的全部未提交改动进行审查。
+
+`/review` 是可选环节，不自动修改文件，不自动提交，也不强制阻断 `/commit`。
+
+## 前置条件
+
+1. **检查当前分支**：若在 `master` 分支上，立即终止并提示：`当前在 master 分支，请先运行 /new-branch 创建特性分支`
+2. 读取当前分支名，记为 `<current>`
+3. 检测 base 分支：
+   ```bash
+   BASE=$(git remote show origin 2>/dev/null | awk '/HEAD branch/ {print $NF}')
+   [ -z "$BASE" ] && BASE=master
+   ```
+4. 读取工作区状态：
+   ```bash
+   git status --short
+   ```
+5. 若没有未提交改动，提示：`当前没有未提交改动，可以直接运行 /commit 或 /merge-to-main`
+
+## Review 输入
+
+审查前收集以下上下文：
+
+```bash
+git status --short
+git diff "$BASE"...HEAD
+git diff
+```
+
+同时读取当前分支对应的规划文件，存在几个读几个，不存在不阻断：
+
+```text
+plan/<type>/<branch-name>/PLAN.md
+plan/<type>/<branch-name>/TASK.md
+plan/<type>/<branch-name>/ANALYSIS.md
+```
+
+基于这些输入整理 review brief：
+
+- 本次目标和验收标准
+- 已完成任务
+- 当前改动摘要
+- 关键 diff
+- 需要重点审查的风险点
+
+## 审查机制
+
+优先使用当前 Codex 环境可用的新上下文审查能力：
+
+1. 如果支持 `code-reviewer` 子代理或等价的新上下文大模型，委托它审查 review brief 和 diff。
+2. 子代理只返回 findings，不直接修改文件。
+3. 如果当前环境不支持子代理或新上下文审查，则降级为当前 Codex 按 code review stance 审查。
+
+降级不是失败。不同 Codex 环境能力不同，但 `/review` 的入口、目标和输出格式必须保持一致。
+
+## 审查重点
+
+- correctness：实现是否满足 PLAN / TASK / ANALYSIS 的目标
+- regression：是否引入明显回归或遗漏相关文件
+- reliability：错误处理、边界条件和状态一致性
+- security：权限、敏感信息、命令执行和配置风险
+- maintainability：命名、结构、重复、复杂度和可读性
+- documentation：README、skill 描述、工作流链路是否同步
+- repository rules：是否符合 AGENTS.md、constitution 和路径规范
+
+## 输出格式
+
+审查结果必须 findings 优先，按严重程度排序：
+
+```text
+Findings
+
+- [P1] <标题>
+  事实：<基于文件或 diff 的事实>
+  推断：<为什么这是问题>
+  建议：<如何修复>
+  位置：<文件路径:行号>
+
+Open Questions
+
+- <需要用户确认的问题，没有则写“无”>
+
+Summary
+
+- <一句话总结是否建议先修复再 /commit>
+```
+
+严重程度：
+
+- `P0`：必须立即修复，可能导致严重错误或数据/安全风险
+- `P1`：应在提交前修复，可能导致功能错误或明显回归
+- `P2`：建议修复，可维护性、边界条件或文档同步问题
+- `P3`：可选优化
+
+如果没有发现问题，明确输出：
+
+```text
+Findings
+
+未发现阻断 /commit 的问题。
+```
+
+## 收尾
+
+- 如果存在 `P0` 或 `P1`，询问：**"发现提交前应处理的问题，是否进入修复？"**
+- 如果没有 `P0` 或 `P1`，提示：**"Review 完成，可以继续运行 `/commit`。"**

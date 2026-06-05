@@ -88,6 +88,6 @@ description: 将当前分支推送到远端并创建 Pull Request，适合需要
 ## 完整链路
 
 ```
-/new-branch → /plan → /task → /execute → /commit → /create-pr     # 需要 Review
-/new-branch → /plan → /task → /execute → /commit → /merge-to-main  # 直接合并
+/new-branch → /plan → /task → /execute → /review? → /commit → /create-pr     # 需要 PR Review
+/new-branch → /plan → /task → /execute → /review? → /commit → /merge-to-main  # 直接合并
 ```

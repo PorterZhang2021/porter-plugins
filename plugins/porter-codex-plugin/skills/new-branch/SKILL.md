@@ -75,12 +75,12 @@ Help the user start a new Git branch in a Codex worktree, keeping the main check
 
 6. **下一步**（根据分支类型）：
    ```
-   /plan → /task → /execute → /commit → /merge-to-main
+   /plan → /task → /execute → /review? → /commit → /merge-to-main
    ```
 
    **fix（Bug 修复）：**
    ```
-   /analyze-bug → /task → /execute → /commit → /merge-to-main
+   /analyze-bug → /task → /execute → /review? → /commit → /merge-to-main
    ```
    - `fix` 分支**必须先运行 `/analyze-bug`** 进行 Bug 分析和根因定位
    - `/analyze-bug` 会输出 `ANALYSIS.md`，然后 `/task` 基于此生成修复任务

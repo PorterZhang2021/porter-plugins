@@ -9,7 +9,7 @@ description: 根据用户意图推荐合适的 Porter Codex 工作流 skill
 
 ## 使用场景
 
-- 用户不确定应该运行 `/plan`、`/task`、`/execute` 还是 `/commit`
+- 用户不确定应该运行 `/plan`、`/task`、`/execute`、`/review` 还是 `/commit`
 - 用户描述了一个目标，但没有指定工作流入口
 - 用户想了解 Codex 插件里有哪些可用 skill
 
@@ -22,6 +22,7 @@ description: 根据用户意图推荐合适的 Porter Codex 工作流 skill
 | 拆分任务清单 | `/task` |
 | 执行已有任务 | `/execute` |
 | 分析 Bug 根因 | `/analyze-bug` |
+| 提交前审查 / 检查实现是否有问题 | `/review` |
 | 提交当前改动 | `/commit` |
 | 合并回主分支 | `/merge-to-main` |
 | 创建 Pull Request | `/create-pr` |

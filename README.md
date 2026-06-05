@@ -92,6 +92,7 @@ codex plugin add porter-codex-plugin@porter-plugins
 | `plan` | 是 | 是 | 按分支类型结对生成规划文档 PLAN.md。 |
 | `task` | 是 | 是 | 按 TDD 结构生成任务清单 TASK.md。 |
 | `execute` | 是 | 是 | 按分支类型节奏逐任务执行 TASK.md。 |
+| `review` | 否 | 是 | 可选的 Codex 提交前审查，优先使用独立审查上下文检查本次实现或修复。 |
 | `commit` | 是 | 是 | 按 Conventional Commits 规范创建格式化提交。 |
 | `merge-to-main` | 是 | 是 | 将当前分支合并回主分支。 |
 | `create-pr` | 是 | 是 | 推送分支并创建 Pull Request。 |
@@ -112,13 +113,13 @@ codex plugin add porter-codex-plugin@porter-plugins
 功能开发：
 
 ```text
-/new-branch -> /plan -> /task -> /execute -> /commit -> /merge-to-main
+/new-branch -> /plan -> /task -> /execute -> /review? -> /commit -> /merge-to-main
 ```
 
 Bug 修复：
 
 ```text
-/new-branch -> /analyze-bug -> /task -> /execute -> /commit -> /merge-to-main
+/new-branch -> /analyze-bug -> /task -> /execute -> /review? -> /commit -> /merge-to-main
 ```
 
 Codex 项目初始化：
