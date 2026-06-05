@@ -9,8 +9,8 @@ error() { echo "[merge-to-main] ERROR: $*" >&2; exit 1; }
 CURRENT=$(git branch --show-current)
 [ -z "$CURRENT" ] && error "当前处于 detached HEAD 状态，无法合并"
 
-BASE=$(git remote show origin | grep 'HEAD branch' | awk '{print $NF}')
-[ -z "$BASE" ] && error "无法检测远端默认主分支名"
+BASE=$(git config --get "branch.$CURRENT.porter-base" || true)
+[ -z "$BASE" ] && error "当前分支没有记录 porter-base，请先使用 \$porter-codex-plugin:new-branch 创建分支，或手动设置：git config branch.$CURRENT.porter-base <base>"
 
 [ "$CURRENT" = "$BASE" ] && error "当前已在 $BASE 分支，无需合并"
 
@@ -30,17 +30,21 @@ if ! git -C "$MAIN_REPO" diff --quiet || ! git -C "$MAIN_REPO" diff --cached --q
   error "主仓库工作区有未提交的变更，请先处理后再合并"
 fi
 
-# ── 4. 拉取远端并同步本地 base ───────────────────────────────────────────────
-info "拉取 origin/$BASE ..."
-git fetch origin "$BASE"
-
 if ! git -C "$MAIN_REPO" show-ref --verify --quiet "refs/heads/$BASE"; then
   error "主仓库中不存在本地 base 分支：$BASE"
 fi
 
-info "同步本地 $BASE 到 origin/$BASE ..."
-if ! git -C "$MAIN_REPO" merge --ff-only "origin/$BASE" 2>/dev/null; then
-  error "本地 $BASE 与 origin/$BASE 已分叉，请先手动排查后再合并"
+# ── 4. 拉取远端并同步本地 base ───────────────────────────────────────────────
+if git ls-remote --exit-code --heads origin "$BASE" >/dev/null 2>&1; then
+  info "拉取 origin/$BASE ..."
+  git fetch origin "$BASE"
+
+  info "同步本地 $BASE 到 origin/$BASE ..."
+  if ! git -C "$MAIN_REPO" merge --ff-only "origin/$BASE" 2>/dev/null; then
+    error "本地 $BASE 与 origin/$BASE 已分叉，请先手动排查后再合并"
+  fi
+else
+  info "远端 origin/$BASE 不存在，使用本地 $BASE 作为 fallback"
 fi
 
 BASE_REF="refs/heads/$BASE"

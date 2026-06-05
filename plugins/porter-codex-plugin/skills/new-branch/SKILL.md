@@ -37,28 +37,42 @@ Help the user start a new Git branch in a Codex worktree, keeping the main check
 
 2. **Check current git status**. If there are uncommitted changes, warn the user and ask whether to continue anyway.
 
-3. **更新并确认 base 分支**：
+3. **确认并更新 base 分支**：
 
-   先检测远端默认主分支，然后更新本地 base 分支：
+   必须先确认本次从哪个 base 分支创建新分支：
+
+   - 如果用户已在请求中明确指定 base 分支，使用该 base。
+   - 如果用户未指定 base 分支，先询问用户，例如：`要从哪个 base 分支创建新分支？`
+   - 不要自动使用远端默认主分支作为 base；远端默认主分支只能作为提示信息，不作为隐式选择。
+
+   确认 base 后，拉取远端并更新本地 base 分支：
 
    ```bash
-   BASE=$(git remote show origin | awk '/HEAD branch/ {print $NF}')
-   [ -z "$BASE" ] && BASE=$(git branch --show-current)
-   git fetch origin "$BASE"
+   BASE="<user-specified-base>"
 
-   if git show-ref --verify --quiet "refs/heads/$BASE"; then
+   if git ls-remote --exit-code --heads origin "$BASE" >/dev/null 2>&1; then
+     git fetch origin "$BASE"
+
+     if git show-ref --verify --quiet "refs/heads/$BASE"; then
+       git switch "$BASE"
+       git merge --ff-only "origin/$BASE"
+     else
+       git switch -c "$BASE" --track "origin/$BASE"
+     fi
+   elif git show-ref --verify --quiet "refs/heads/$BASE"; then
      git switch "$BASE"
-     git merge --ff-only "origin/$BASE"
+     echo "远端 origin/$BASE 不存在，使用本地 $BASE 作为 fallback"
    else
-     git switch -c "$BASE" "origin/$BASE"
+     echo "base 分支不存在：$BASE"
+     exit 1
    fi
    ```
 
-   如果远端不可用但本地 base 分支存在，改用本地 `$BASE`，并明确告知用户这是 fallback。
+   如果远端 `$BASE` 不存在但本地 base 分支存在，改用本地 `$BASE`，并明确告知用户这是 fallback。
 
    在创建 worktree 前，必须向用户说明：
-   - 检测到的远端默认分支：`$BASE`
-   - 将基于本地 base 分支创建：`$BASE`
+   - 用户指定的 base 分支：`$BASE`
+   - 将基于更新后的本地 base 分支创建：`$BASE`
    - base 当前提交：`git log -1 --oneline "$BASE"`
    - 如果发生 fallback 或 `git merge --ff-only` 失败，必须说明原因；无法快进时先询问用户，不要擅自 merge/rebase。
 
@@ -68,7 +82,10 @@ Help the user start a new Git branch in a Codex worktree, keeping the main check
 
    ```bash
    git worktree add -b <type>/<name> ".codex/worktrees/<type>/<name>" "$BASE"
+   git -C ".codex/worktrees/<type>/<name>" config "branch.<type>/<name>.porter-base" "$BASE"
    ```
+
+   `branch.<type>/<name>.porter-base` 用于后续 `$porter-codex-plugin:merge-to-main` 判断应合并回哪个 base 分支。
 
    创建后，将后续工作目录切换到：
 
