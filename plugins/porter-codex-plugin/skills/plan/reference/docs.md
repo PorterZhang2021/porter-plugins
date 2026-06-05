@@ -6,4 +6,4 @@
 2. **文档结构** — 章节大纲
 3. **内容来源** — 参考哪些现有代码/文档/设计
 
-收尾：提示下一步运行 `/execute` 或 `/task`
+收尾：提示下一步运行 `$porter-codex-plugin:execute` 或 `$porter-codex-plugin:task`

@@ -57,5 +57,5 @@ bash "<skill-base-dir>/merge-to-main.sh"
 
 ```
 git push origin <base>   # 推送到远端
-/new-branch              # 开始新功能
+$porter-codex-plugin:new-branch              # 开始新功能
 ```

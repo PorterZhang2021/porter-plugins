@@ -78,6 +78,7 @@ codex plugin add porter-codex-plugin@porter-plugins
 ### Codex 适配说明
 
 - Codex 插件包含所有现有工作流 skill。
+- Codex 插件 skill 使用 `$porter-codex-plugin:<skill>` 显式调用；`/plan`、`/review` 等是 Codex 内置 slash command，不等同于插件 skill。
 - Claude 专属入口在 Codex 插件中使用 Codex 专属名称：
   - `claude-md` 对标为 `codex-md`
   - `setup-permissions` 对标为 `codex-permissions`
@@ -113,19 +114,19 @@ codex plugin add porter-codex-plugin@porter-plugins
 功能开发：
 
 ```text
-/new-branch -> /plan -> /task -> /execute -> /review? -> /commit -> /merge-to-main
+$porter-codex-plugin:new-branch -> $porter-codex-plugin:plan -> $porter-codex-plugin:task -> $porter-codex-plugin:execute -> $porter-codex-plugin:review? -> $porter-codex-plugin:commit -> $porter-codex-plugin:merge-to-main
 ```
 
 Bug 修复：
 
 ```text
-/new-branch -> /analyze-bug -> /task -> /execute -> /review? -> /commit -> /merge-to-main
+$porter-codex-plugin:new-branch -> $porter-codex-plugin:analyze-bug -> $porter-codex-plugin:task -> $porter-codex-plugin:execute -> $porter-codex-plugin:review? -> $porter-codex-plugin:commit -> $porter-codex-plugin:merge-to-main
 ```
 
 Codex 项目初始化：
 
 ```text
-/constitution -> /codex-md -> /codex-permissions
+$porter-codex-plugin:constitution -> $porter-codex-plugin:codex-md -> $porter-codex-plugin:codex-permissions
 ```
 
 ## Agents

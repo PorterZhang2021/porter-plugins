@@ -7,4 +7,4 @@
 3. **验证方式** — 如何量化改善效果（benchmark/profiling）
 4. **回归风险** — 可能影响的功能
 
-收尾：提示下一步运行 `/execute` 或 `/task`
+收尾：提示下一步运行 `$porter-codex-plugin:execute` 或 `$porter-codex-plugin:task`

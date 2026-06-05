@@ -12,18 +12,24 @@ allowed-tools:
 
 This command helps you create well-formatted commits following the Conventional Commits specification.
 
+## 阶段边界（强制）
+
+- 本 skill 只检查、暂存并创建 commit，不 push，不 create PR，不 merge。
+- 即使用户说"提交后顺便合并/开 PR"，也必须在 commit 完成后停止。
+- commit 完成后先询问用户是否还要调整提交内容或提交信息；如果没有，再提示用户显式调用 `$porter-codex-plugin:create-pr` 或 `$porter-codex-plugin:merge-to-main`。
+
 ## Usage
 
 Basic usage:
 ```
-/commit
+$porter-codex-plugin:commit
 ```
 
 With options:
 ```
-/commit --no-verify
-/commit --style=full
-/commit --style=full --type=feat
+$porter-codex-plugin:commit --no-verify
+$porter-codex-plugin:commit --style=full
+$porter-codex-plugin:commit --style=full --type=feat
 ```
 
 ## Command Options
@@ -36,7 +42,7 @@ With options:
 
 ## What This Command Does
 
-1. **检查当前分支**：若在 `master` 分支上，立即终止并提示：`当前在 master 分支，请先运行 /new-branch 创建特性分支`
+1. **检查当前分支**：若在 `master` 分支上，立即终止并提示：`当前在 master 分支，请先运行 $porter-codex-plugin:new-branch 创建特性分支`
 
 2. **Consistency check** (unless `--no-verify`):
 
@@ -278,6 +284,6 @@ Refs: RFC-6749, RFC-7636
 After committing, choose based on your workflow:
 
 ```
-/commit → /merge-to-main  # Merge directly to main (solo projects)
-/commit → /create-pr      # Push branch and open a PR (team review)
+$porter-codex-plugin:commit → $porter-codex-plugin:merge-to-main  # Merge directly to main (solo projects)
+$porter-codex-plugin:commit → $porter-codex-plugin:create-pr      # Push branch and open a PR (team review)
 ```

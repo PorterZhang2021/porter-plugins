@@ -10,6 +10,13 @@ allowed-tools:
 
 # Plan Workshop
 
+## 阶段边界（强制）
+
+- 本 skill 只生成或更新 `PLAN.md`，不生成 `TASK.md`，不执行实现，不提交。
+- 即使用户在规划阶段说"直接做"、"顺便改掉"、"全部处理"，也不得进入任务拆分或执行阶段。
+- 规划完成后必须停止，先询问用户是否还要补充或调整方案。
+- 如果用户确认方案无补充，再提示用户显式调用 `$porter-codex-plugin:task` 进入下一阶段。
+
 ## 前置条件
 
 1. 读取当前分支名，提取类型前缀
@@ -67,7 +74,7 @@ README.md
 提示方式：
 
 ```text
-Codex：可以继续运行 /task 或使用 task skill。
+Codex：PLAN.md 已生成。还有要补充或调整方案的吗？如果没有，请显式调用 $porter-codex-plugin:task 生成任务清单。
 ```
 
 完整链路：

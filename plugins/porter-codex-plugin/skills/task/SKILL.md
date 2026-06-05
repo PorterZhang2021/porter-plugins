@@ -10,23 +10,30 @@ allowed-tools:
 
 # Task Workshop
 
+## 阶段边界（强制）
+
+- 本 skill 只生成或更新 `TASK.md`，不执行任务，不修改业务代码或配置内容。
+- 即使用户在任务拆分阶段说"开始修"、"顺便改掉"、"全部处理"，也不得进入执行阶段。
+- 任务清单完成后必须停止，先询问用户是否还要补充、删除或调整任务。
+- 如果用户确认任务无补充，再提示用户显式调用 `$porter-codex-plugin:execute` 进入下一阶段。
+
 ## 前置条件
 
-1. 确认 `AGENTS.md` 和 `.codex/constitution.md` 存在，否则提示用户先运行 `/codex-md`
-2. **检查当前分支**：若在 `master` 分支上，立即终止并提示：`当前在 master 分支，请先运行 /new-branch 创建特性分支`
+1. 确认 `AGENTS.md` 和 `.codex/constitution.md` 存在，否则提示用户先运行 `$porter-codex-plugin:codex-md`
+2. **检查当前分支**：若在 `master` 分支上，立即终止并提示：`当前在 master 分支，请先运行 $porter-codex-plugin:new-branch 创建特性分支`
 3. 读取当前分支名，提取类型前缀
 3. **分支类型特殊处理：**
 
 | 类型 | 依赖文件 | 不存在时提示 |
 |------|----------|-------------|
-| `feat` | `plan/<type>/<name>/PLAN.md` | 先运行 `/plan` |
-| `fix` | `plan/<type>/<name>/ANALYSIS.md` | **先运行 `/analyze-bug`** |
-| `refactor` | `plan/<type>/<name>/PLAN.md` | 先运行 `/plan` |
-| 其他 | `plan/<type>/<name>/PLAN.md` | 先运行 `/plan` |
+| `feat` | `plan/<type>/<name>/PLAN.md` | 先运行 `$porter-codex-plugin:plan` |
+| `fix` | `plan/<type>/<name>/ANALYSIS.md` | **先运行 `$porter-codex-plugin:analyze-bug`** |
+| `refactor` | `plan/<type>/<name>/PLAN.md` | 先运行 `$porter-codex-plugin:plan` |
+| 其他 | `plan/<type>/<name>/PLAN.md` | 先运行 `$porter-codex-plugin:plan` |
 
 **fix 分支特殊逻辑**：
 - 优先读取 `ANALYSIS.md` 获取根因分析
-- 若不存在 `ANALYSIS.md`，提示先运行 `/analyze-bug` 完成 Bug 分析
+- 若不存在 `ANALYSIS.md`，提示先运行 `$porter-codex-plugin:analyze-bug` 完成 Bug 分析
 - **不需要 PLAN.md**，基于 ANALYSIS 直接生成任务
 
 ## TDD 铁律
@@ -70,5 +77,5 @@ TASK.md 文件头格式见 `templates/task_header.md`。
 ## 收尾
 
 - 生成完整任务清单，展示全部内容，直接写入 `plan/<type>/<branch-name>/TASK.md`
-- 提示使用 `/commit` 提交
-- 询问：**"任务清单已生成，是否运行 `/execute` 开始实现？"**
+- 停止，不执行任务
+- 询问：**"任务清单已生成。还有要补充、删除或调整的吗？如果没有，请显式调用 `$porter-codex-plugin:execute` 开始实现。"**

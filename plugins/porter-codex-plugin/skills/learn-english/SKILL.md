@@ -11,9 +11,9 @@ argument-hint: "<用英文或中文描述你想做什么>"
 ## 使用方式
 
 ```
-/learn-english I want add login page before the user can see dashboard
-/learn-english 帮我在用户注册之后显示欢迎页面
-/learn-english 帮我 delete the config file after deployment finish
+$porter-codex-plugin:learn-english I want add login page before the user can see dashboard
+$porter-codex-plugin:learn-english 帮我在用户注册之后显示欢迎页面
+$porter-codex-plugin:learn-english 帮我 delete the config file after deployment finish
 ```
 
 ---
@@ -114,7 +114,7 @@ Codex 如支持 request_user_input 或类似结构化提问能力，可以用结
 
 **用户输入：**
 ```
-/learn-english Please delete the backup files after the deployment is complete
+$porter-codex-plugin:learn-english Please delete the backup files after the deployment is complete
 ```
 
 **skill 输出：**
@@ -135,7 +135,7 @@ Codex 如支持 request_user_input 或类似结构化提问能力，可以用结
 
 **用户输入：**
 ```
-/learn-english 帮我在用户注册完成之前，显示一个引导页面
+$porter-codex-plugin:learn-english 帮我在用户注册完成之前，显示一个引导页面
 ```
 
 **skill 输出：**
@@ -157,7 +157,7 @@ Codex 如支持 request_user_input 或类似结构化提问能力，可以用结
 
 **用户输入：**
 ```
-/learn-english 帮我 remove all cache files except the user session data
+$porter-codex-plugin:learn-english 帮我 remove all cache files except the user session data
 ```
 
 **skill 输出：**

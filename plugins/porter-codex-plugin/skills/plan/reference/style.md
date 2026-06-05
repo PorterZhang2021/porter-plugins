@@ -6,4 +6,4 @@
 2. **工具** — 使用哪些格式化工具及配置
 3. **影响范围** — 涉及哪些文件或目录
 
-收尾：提示下一步运行 `/execute` 或 `/task`
+收尾：提示下一步运行 `$porter-codex-plugin:execute` 或 `$porter-codex-plugin:task`

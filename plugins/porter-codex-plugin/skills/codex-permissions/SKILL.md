@@ -7,6 +7,12 @@ description: 为当前项目结对配置 Codex 项目级权限与协作规则说
 
 为当前项目结对配置 Codex 项目级权限与协作规则说明。
 
+## 阶段边界（强制）
+
+- 本 skill 只生成或更新 Codex 权限规则，不自动提交。
+- 即使用户说"顺便提交"，也必须在权限规则写入后停止。
+- 完成后先询问用户是否还要补充或调整权限规则；如果没有，再提示用户显式调用 `$porter-codex-plugin:commit`。
+
 ## 目标
 
 根据当前项目风险，帮助用户明确 Codex 的文件写入、命令执行、网络访问、Git 操作和 worktree 约束。优先写入项目级 `.codex/config.toml`；如果当前 Codex 环境不支持某项配置，则把规则写入 `AGENTS.md` 的 AI 协作指令部分。
@@ -75,7 +81,7 @@ description: 为当前项目结对配置 Codex 项目级权限与协作规则说
 - 汇总展示完整配置或协作规则
 - 等待用户最终确认
 - 写入 `.codex/config.toml` 或更新 `AGENTS.md`
-- 询问：**"Codex 权限规则已写入，是否运行 `/commit` 提交？"**
+- 停止，询问：**"Codex 权限规则已写入。还有要补充或调整的吗？如果没有，请显式调用 `$porter-codex-plugin:commit` 提交。"**
 
 ## 原则
 

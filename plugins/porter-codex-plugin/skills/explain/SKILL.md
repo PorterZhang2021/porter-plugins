@@ -21,22 +21,22 @@ allowed-tools:
 
 ```
 # 显示帮助信息（默认）
-/explain
+$porter-codex-plugin:explain
 
 # 探索整个项目，生成架构总览（含功能清单）
-/explain type=architecture
+$porter-codex-plugin:explain type=architecture
 
 # 显示功能清单，供选择后深入探索
-/explain type=feature
+$porter-codex-plugin:explain type=feature
 
 # 深入讲解某个具体功能的实现
-/explain type=feature topic=upload
+$porter-codex-plugin:explain type=feature topic=upload
 
 # 这次改了什么（变更记录）
-/explain type=changelog
+$porter-codex-plugin:explain type=changelog
 
 # 设计决策与取舍
-/explain type=decision topic=缓存策略
+$porter-codex-plugin:explain type=decision topic=缓存策略
 
 ```
 
@@ -77,11 +77,11 @@ allowed-tools:
 
 **如果文件存在**：提取 `## 功能清单` 章节内容，直接展示给用户，并提示：
 ```
-以上是当前功能清单。运行 `/explain feature {topic}` 深入了解某个功能。
-如需重新生成，运行 `/explain` 更新 architecture.md。
+以上是当前功能清单。运行 `$porter-codex-plugin:explain type=feature topic={topic}` 深入了解某个功能。
+如需重新生成，运行 `$porter-codex-plugin:explain` 更新 architecture.md。
 ```
 
-**如果文件不存在**：提示用户先运行 `/explain` 生成架构总览，再使用此命令。
+**如果文件不存在**：提示用户先运行 `$porter-codex-plugin:explain` 生成架构总览，再使用此命令。
 
 ---
 

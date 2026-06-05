@@ -16,7 +16,7 @@ BASE=$(git remote show origin | grep 'HEAD branch' | awk '{print $NF}')
 
 # ── 2. 检查工作区是否干净 ──────────────────────────────────────────────────────
 if ! git diff --quiet || ! git diff --cached --quiet; then
-  error "工作区有未提交的变更，请先运行 /commit"
+  error "工作区有未提交的变更，请先运行 \$porter-codex-plugin:commit"
 fi
 
 # ── 3. 获取主仓库路径（兼容 worktree）────────────────────────────────────────
@@ -60,7 +60,7 @@ if [ -n "$BEHIND" ]; then
   info "$BASE 有当前分支未包含的提交，开始 rebase 到 $BASE_COMMIT ..."
   if ! git rebase "$BASE_COMMIT"; then
     git rebase --abort
-    error "rebase 发生冲突，已中止。请手动解决冲突后重新运行 /merge-to-main"
+    error "rebase 发生冲突，已中止。请手动解决冲突后重新运行 \$porter-codex-plugin:merge-to-main"
   fi
   info "rebase 完成"
 fi
@@ -76,4 +76,4 @@ git -C "$MAIN_REPO" log --oneline -4
 echo ""
 echo "下一步："
 echo "  推送到远端 → git push origin $BASE"
-echo "  开始新功能 → /new-branch"
+echo "  开始新功能 → \$porter-codex-plugin:new-branch"

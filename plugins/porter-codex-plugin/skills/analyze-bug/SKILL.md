@@ -14,6 +14,13 @@ allowed-tools:
 
 Bug 分析的标准流程：复现问题 → 定位根因 → 输出分析报告
 
+## 阶段边界（强制）
+
+- 本 skill 只做 Bug 分析，只允许产出或更新 `ANALYSIS.md`。
+- 即使用户在分析阶段说"修一下"、"全部处理"、"继续做"，也不得直接修改代码或生成 `TASK.md`。
+- 分析完成后必须停止，先询问用户是否还要补充或调整分析内容。
+- 如果用户确认分析无补充，再提示用户显式调用 `$porter-codex-plugin:task` 进入下一阶段。
+
 ```mermaid
 flowchart TD
     A([BEGIN]) --> B[检查分支类型]
@@ -38,7 +45,7 @@ flowchart TD
 
 ### 检查分支类型
 验证当前是否在 `fix/*` 分支上：
-- 如果是 `main`/`master`：建议先运行 `/new-branch fix/<bug-name>`
+- 如果是 `main`/`master`：建议先运行 `$porter-codex-plugin:new-branch fix/<bug-name>`
 - 如果不是 `fix/*`：警告用户但继续执行
 
 ### 收集错误信息
@@ -100,8 +107,8 @@ flowchart TD
 ✅ Bug 分析完成！
 
 下一步：
-  1. 运行 /task 生成修复任务清单（推荐，确保 TDD）
-  2. 直接运行 /execute 开始修复（改动简单时）
+  1. 还有要补充或调整分析内容的吗？
+  2. 如果没有，请显式调用 $porter-codex-plugin:task 生成修复任务清单（推荐，确保 TDD）
 
 TDD 提醒：fix 类型必须遵循：
   1. 先写复现测试（红）
@@ -114,3 +121,4 @@ TDD 提醒：fix 类型必须遵循：
 - ❌ 分析阶段不要直接修改代码修复 bug
 - ❌ 不要跳过复现直接看代码
 - ❌ 分析报告中不要包含具体修复代码
+- ❌ 不要自动调用或执行 $porter-codex-plugin:task / $porter-codex-plugin:execute

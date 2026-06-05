@@ -6,4 +6,4 @@
 2. **风险评估** — 可能影响哪些功能
 3. **回滚方案** — 出问题如何恢复
 
-收尾：提示下一步运行 `/execute` 或 `/task`
+收尾：提示下一步运行 `$porter-codex-plugin:execute` 或 `$porter-codex-plugin:task`

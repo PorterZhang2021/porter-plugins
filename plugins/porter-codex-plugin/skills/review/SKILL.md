@@ -5,13 +5,20 @@ description: 提交前使用独立审查上下文检查本次实现或修复
 
 # Review
 
-在 `/execute` 之后、`/commit` 之前，对当前 worktree 中本次实现或修复的全部未提交改动进行审查。
+在 `$porter-codex-plugin:execute` 之后、`$porter-codex-plugin:commit` 之前，对当前 worktree 中本次实现或修复的全部未提交改动进行审查。
 
-`/review` 是可选环节，不自动修改文件，不自动提交，也不强制阻断 `/commit`。
+`$porter-codex-plugin:review` 是可选环节，不自动修改文件，不自动提交，也不强制阻断 `$porter-codex-plugin:commit`。
+
+## 阶段边界（强制）
+
+- 本 skill 只做提交前审查，只输出 findings、open questions 和 summary。
+- 不得自动修改文件，不得自动调用 `$porter-codex-plugin:execute` 修复，也不得自动调用 `$porter-codex-plugin:commit` 提交。
+- 即使用户说"顺便修掉"或"没问题就提交"，也必须先完成审查并停止。
+- 审查完成后先询问用户是否要补充审查范围或处理 findings；如果没有，再提示用户显式调用下一阶段 skill。
 
 ## 前置条件
 
-1. **检查当前分支**：若在 `master` 分支上，立即终止并提示：`当前在 master 分支，请先运行 /new-branch 创建特性分支`
+1. **检查当前分支**：若在 `master` 分支上，立即终止并提示：`当前在 master 分支，请先运行 $porter-codex-plugin:new-branch 创建特性分支`
 2. 读取当前分支名，记为 `<current>`
 3. 检测 base 分支：
    ```bash
@@ -22,7 +29,7 @@ description: 提交前使用独立审查上下文检查本次实现或修复
    ```bash
    git status --short
    ```
-5. 若没有未提交改动，提示：`当前没有未提交改动，可以直接运行 /commit 或 /merge-to-main`
+5. 若没有未提交改动，提示：`当前没有未提交改动。还有要补充审查的吗？如果没有，请显式调用 $porter-codex-plugin:commit 或 $porter-codex-plugin:merge-to-main`
 
 ## Review 输入
 
@@ -58,7 +65,7 @@ plan/<type>/<branch-name>/ANALYSIS.md
 2. 子代理只返回 findings，不直接修改文件。
 3. 如果当前环境不支持子代理或新上下文审查，则降级为当前 Codex 按 code review stance 审查。
 
-降级不是失败。不同 Codex 环境能力不同，但 `/review` 的入口、目标和输出格式必须保持一致。
+降级不是失败。不同 Codex 环境能力不同，但 `$porter-codex-plugin:review` 的入口、目标和输出格式必须保持一致。
 
 ## 审查重点
 
@@ -89,7 +96,7 @@ Open Questions
 
 Summary
 
-- <一句话总结是否建议先修复再 /commit>
+- <一句话总结是否建议先修复再 $porter-codex-plugin:commit>
 ```
 
 严重程度：
@@ -104,10 +111,10 @@ Summary
 ```text
 Findings
 
-未发现阻断 /commit 的问题。
+未发现阻断 $porter-codex-plugin:commit 的问题。
 ```
 
 ## 收尾
 
 - 如果存在 `P0` 或 `P1`，询问：**"发现提交前应处理的问题，是否进入修复？"**
-- 如果没有 `P0` 或 `P1`，提示：**"Review 完成，可以继续运行 `/commit`。"**
+- 如果没有 `P0` 或 `P1`，提示：**"Review 完成。还有要补充审查或处理的问题吗？如果没有，请显式调用 `$porter-codex-plugin:commit` 提交。"**

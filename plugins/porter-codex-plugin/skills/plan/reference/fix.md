@@ -37,6 +37,6 @@
 
 ## 收尾
 
-提示运行 `/task` 生成修复任务清单（必须执行）
+提示运行 `$porter-codex-plugin:task` 生成修复任务清单（必须执行）
 
 **重要**：第一个任务必须是"编写能复现 Bug 的失败测试"，遵循 TDD Red-Green-Refactor 流程。

@@ -6,4 +6,4 @@
 2. **变更原因** — 解决什么构建问题或优化目标
 3. **验证方式** — 如何确认构建正常
 
-收尾：提示下一步运行 `/execute` 或 `/task`
+收尾：提示下一步运行 `$porter-codex-plugin:execute` 或 `$porter-codex-plugin:task`

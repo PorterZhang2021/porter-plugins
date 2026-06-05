@@ -47,6 +47,6 @@ sequenceDiagram
 
 | 功能 | 简述 | 深入探索 |
 |------|------|---------|
-| {功能名} | 一句话说清这个功能做什么 | `/explain feature {topic}` |
+| {功能名} | 一句话说清这个功能做什么 | `$porter-codex-plugin:explain type=feature topic={topic}` |
 
 > 从这里选一个感兴趣的功能，运行对应命令即可深入了解。

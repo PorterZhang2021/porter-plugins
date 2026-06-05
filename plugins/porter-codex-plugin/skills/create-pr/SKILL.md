@@ -7,9 +7,9 @@ description: 将当前分支推送到远端并创建 Pull Request，适合需要
 
 将当前分支推送到远端并创建 Pull Request，适合需要 Code Review 的场景。
 
-> 与 `/merge-to-main` 平行使用：
-> - 需要 Review → `/create-pr`（push 分支 + 开 PR，由团队合并）
-> - 直接合并 → `/merge-to-main`（本地合并后 push，适合个人项目）
+> 与 `$porter-codex-plugin:merge-to-main` 平行使用：
+> - 需要 Review → `$porter-codex-plugin:create-pr`（push 分支 + 开 PR，由团队合并）
+> - 直接合并 → `$porter-codex-plugin:merge-to-main`（本地合并后 push，适合个人项目）
 
 ## 前置条件
 
@@ -29,7 +29,7 @@ description: 将当前分支推送到远端并创建 Pull Request，适合需要
 
 2. **检查工作区是否干净**
    - 运行 `git status`
-   - 如有未提交的变更，提示用户先使用 `/commit` 提交，终止流程
+   - 如有未提交的变更，提示用户先使用 `$porter-codex-plugin:commit` 提交，终止流程
 
 3. **检查 `gh` CLI**
    - 运行 `gh auth status`
@@ -88,6 +88,6 @@ description: 将当前分支推送到远端并创建 Pull Request，适合需要
 ## 完整链路
 
 ```
-/new-branch → /plan → /task → /execute → /review? → /commit → /create-pr     # 需要 PR Review
-/new-branch → /plan → /task → /execute → /review? → /commit → /merge-to-main  # 直接合并
+$porter-codex-plugin:new-branch → $porter-codex-plugin:plan → $porter-codex-plugin:task → $porter-codex-plugin:execute → $porter-codex-plugin:review? → $porter-codex-plugin:commit → $porter-codex-plugin:create-pr     # 需要 PR Review
+$porter-codex-plugin:new-branch → $porter-codex-plugin:plan → $porter-codex-plugin:task → $porter-codex-plugin:execute → $porter-codex-plugin:review? → $porter-codex-plugin:commit → $porter-codex-plugin:merge-to-main  # 直接合并
 ```

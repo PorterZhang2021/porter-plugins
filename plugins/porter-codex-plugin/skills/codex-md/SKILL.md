@@ -7,6 +7,12 @@ description: 帮助用户为新项目结对编写 AGENTS.md 操作手册
 
 帮助用户为新项目结对编写 Codex 使用的 `AGENTS.md` 操作手册。
 
+## 阶段边界（强制）
+
+- 本 skill 只生成或更新 `AGENTS.md`，不自动配置权限，不自动提交。
+- 即使用户说"继续配置权限"或"顺便提交"，也必须在 `AGENTS.md` 完成后停止。
+- 完成后先询问用户是否还要补充或调整 `AGENTS.md`；如果没有，再提示用户显式调用 `$porter-codex-plugin:codex-permissions` 或 `$porter-codex-plugin:commit`。
+
 ## 目标
 
 基于固定的四节结构，逐节生成草稿，用户微调确认，最终生成项目根目录下的 `AGENTS.md`。
@@ -16,13 +22,13 @@ description: 帮助用户为新项目结对编写 AGENTS.md 操作手册
 在开始任何内容生成前，先检查 `.codex/constitution.md` 是否存在：
 
 - **存在** -> 继续执行后续流程
-- **不存在** -> 暂停，告知用户"未找到项目宪法，正在启动 `/constitution` 流程"，然后执行 constitution skill 的完整流程，宪法完成后再继续 AGENTS.md 的编写
+- **不存在** -> 暂停，告知用户"未找到项目宪法，正在启动 `$porter-codex-plugin:constitution` 流程"，然后执行 constitution skill 的完整流程，宪法完成后再继续 AGENTS.md 的编写
 
 ## 执行方式
 
 逐节和用户结对确认，不自动填充用户未确认的配置取舍。
 
-收集完所有节所需信息后，一次性生成完整 `AGENTS.md` 草稿，展示全文，写入文件，最后询问：**"AGENTS.md 已写入，是否运行 `/codex-permissions` 配置项目权限？"**
+收集完所有节所需信息后，一次性生成完整 `AGENTS.md` 草稿，展示全文，写入文件，最后停止，询问：**"AGENTS.md 已写入。还有要补充或调整的吗？如果没有，请显式调用 `$porter-codex-plugin:codex-permissions` 配置项目权限。"**
 
 ## AGENTS.md 模板
 
@@ -71,7 +77,7 @@ description: 帮助用户为新项目结对编写 AGENTS.md 操作手册
 
 - 写入 `AGENTS.md`
 - 如果 `.codex/constitution.md` 是本流程新生成的，也展示其路径
-- 询问是否运行 `/codex-permissions` 配置项目级 Codex 权限
+- 询问：**"还有要补充或调整 AGENTS.md 的吗？如果没有，请显式调用 `$porter-codex-plugin:codex-permissions` 配置项目级 Codex 权限。"**
 
 ## 原则
 

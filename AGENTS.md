@@ -39,11 +39,11 @@
 
 ## #---Git 与版本控制-----#
 
-**分支规范：** `/new-branch` 命令
+**分支规范：** `$porter-codex-plugin:new-branch` 命令
 - 类型前缀：`feat/`、`fix/`、`refactor/`、`style/`、`perf/`、`chore/`、`build/`、`ci/`、`test/`、`docs/`
 - 名称：小写、连字符分隔
 
-**提交规范：** `/commit` 命令
+**提交规范：** `$porter-codex-plugin:commit` 命令
 - 遵循 Conventional Commits
 - 简单风格：`type(scope): description`
 - 配置变更独立提交，不混杂
@@ -63,7 +63,7 @@
 2. **影响评估** → 说明变更影响范围，等待确认
 3. **执行变更** → 按宪法规范（kebab-case、正确路径）编辑文件
 4. **验证确认** → 展示变更内容，用户确认符合预期
-5. **使用 `/commit` 提交** → 独立提交，说明变更原因
+5. **使用 `$porter-codex-plugin:commit` 提交** → 独立提交，说明变更原因
 
 **审查标准：**
 - Frontmatter 字段完整
