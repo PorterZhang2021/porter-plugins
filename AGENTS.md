@@ -13,6 +13,12 @@
 
 **使命：** 沉淀个人 Claude Code 与 Codex 配置资产，实现跨环境一键同步与复用
 
+**跨环境边界：**
+- 跨环境复用的目标是沉淀可同步的配置资产，不等于每次变更都同时修改 Claude Code 与 Codex 两侧。
+- 当用户明确指定 Codex 插件或 Codex skill 时，默认只修改 `plugins/porter-codex-plugin/`。
+- 当用户明确指定 Claude Code 插件、Claude skill、agent 或 hook 时，默认只修改 `plugins/porter-claude-plugin/`。
+- 如需从一侧同步构造另一侧能力，必须由用户明确要求；不要擅自做双端同步。
+
 **行为准则：**
 - 新增配置前确认是否符合宪法第1条（简单性）
 - 修改现有配置前说明影响范围
