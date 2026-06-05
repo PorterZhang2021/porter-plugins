@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "apply_patch|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'set -e; if git_root=$(git rev-parse --show-toplevel 2>/dev/null) && [ -f \"$git_root/plugins/porter-codex-plugin/hooks/workflow-guard.sh\" ]; then exec bash \"$git_root/plugins/porter-codex-plugin/hooks/workflow-guard.sh\"; fi; script=$(find \"$HOME/.codex/plugins/cache\" -path \"*/porter-codex-plugin/*/hooks/workflow-guard.sh\" -print -quit 2>/dev/null); [ -n \"$script\" ] && exec bash \"$script\"; echo \"[workflow-guard] cannot locate workflow-guard.sh\" >&2; exit 1'",
+            "timeout": 30,
+            "statusMessage": "Checking Porter workflow stage"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'set -e; if git_root=$(git rev-parse --show-toplevel 2>/dev/null) && [ -f \"$git_root/plugins/porter-codex-plugin/hooks/workflow-guard.sh\" ]; then exec bash \"$git_root/plugins/porter-codex-plugin/hooks/workflow-guard.sh\"; fi; script=$(find \"$HOME/.codex/plugins/cache\" -path \"*/porter-codex-plugin/*/hooks/workflow-guard.sh\" -print -quit 2>/dev/null); [ -n \"$script\" ] && exec bash \"$script\"; echo \"[workflow-guard] cannot locate workflow-guard.sh\" >&2; exit 1'",
+            "timeout": 30,
+            "statusMessage": "Checking Porter workflow command"
+          }
+        ]
+      }
+    ]
+  }
+}

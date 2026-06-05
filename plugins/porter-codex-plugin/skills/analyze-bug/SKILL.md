@@ -20,6 +20,7 @@ Bug 分析的标准流程：复现问题 → 定位根因 → 输出分析报告
 - 即使用户在分析阶段说"修一下"、"全部处理"、"继续做"，也不得直接修改代码或生成 `TASK.md`。
 - 分析完成后必须停止，先询问用户是否还要补充或调整分析内容。
 - 如果用户确认分析无补充，再提示用户显式调用 `$porter-codex-plugin:task` 进入下一阶段。
+- 分析完成后必须同步写入 `plan/fix/<branch-name>/WORKFLOW_STATE.json`，状态为 `awaiting_task`；该状态由 Porter workflow hook 用于阻止越阶段修改实现文件。
 
 ```mermaid
 flowchart TD
@@ -100,6 +101,20 @@ flowchart TD
 ## 建议修复方案
 ```
 
+同时生成或更新 `plan/fix/<branch-name>/WORKFLOW_STATE.json`：
+
+```json
+{
+  "state": "awaiting_task",
+  "current_skill": "$porter-codex-plugin:analyze-bug",
+  "next_skill": "$porter-codex-plugin:task",
+  "allowed_outputs": [
+    "plan/fix/<branch-name>/ANALYSIS.md",
+    "plan/fix/<branch-name>/WORKFLOW_STATE.json"
+  ]
+}
+```
+
 ### 提示下一步操作
 分析报告完成后，提示用户：
 
@@ -122,3 +137,4 @@ TDD 提醒：fix 类型必须遵循：
 - ❌ 不要跳过复现直接看代码
 - ❌ 分析报告中不要包含具体修复代码
 - ❌ 不要自动调用或执行 $porter-codex-plugin:task / $porter-codex-plugin:execute
+- ❌ 不要把自然语言"继续"、"修一下"当作进入任务或执行阶段的授权

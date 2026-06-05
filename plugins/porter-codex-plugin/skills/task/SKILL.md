@@ -16,6 +16,7 @@ allowed-tools:
 - 即使用户在任务拆分阶段说"开始修"、"顺便改掉"、"全部处理"，也不得进入执行阶段。
 - 任务清单完成后必须停止，先询问用户是否还要补充、删除或调整任务。
 - 如果用户确认任务无补充，再提示用户显式调用 `$porter-codex-plugin:execute` 进入下一阶段。
+- 任务清单完成后必须同步写入 `plan/<type>/<branch-name>/WORKFLOW_STATE.json`，状态为 `awaiting_execute`；该状态由 Porter workflow hook 用于阻止越阶段修改实现文件。
 
 ## 前置条件
 
@@ -77,5 +78,19 @@ TASK.md 文件头格式见 `templates/task_header.md`。
 ## 收尾
 
 - 生成完整任务清单，展示全部内容，直接写入 `plan/<type>/<branch-name>/TASK.md`
+- 同步写入 `plan/<type>/<branch-name>/WORKFLOW_STATE.json`：
+
+```json
+{
+  "state": "awaiting_execute",
+  "current_skill": "$porter-codex-plugin:task",
+  "next_skill": "$porter-codex-plugin:execute",
+  "allowed_outputs": [
+    "plan/<type>/<branch-name>/TASK.md",
+    "plan/<type>/<branch-name>/WORKFLOW_STATE.json"
+  ]
+}
+```
+
 - 停止，不执行任务
 - 询问：**"任务清单已生成。还有要补充、删除或调整的吗？如果没有，请显式调用 `$porter-codex-plugin:execute` 开始实现。"**
