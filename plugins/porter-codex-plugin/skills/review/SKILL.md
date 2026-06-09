@@ -1,6 +1,6 @@
 ---
 name: review
-description: 提交前使用独立审查上下文检查本次实现或修复
+description: 提交前使用长上下文和可选子代理检查本次实现或修复
 ---
 
 # Review
@@ -59,11 +59,15 @@ plan/<type>/<branch-name>/ANALYSIS.md
 
 ## 审查机制
 
-优先使用当前 Codex 环境可用的新上下文审查能力：
+采用“双层审查”：当前长上下文负责业务和最终裁决，子代理只负责通用工程审查。
 
-1. 如果支持 `code-reviewer` 子代理或等价的新上下文大模型，委托它审查 review brief 和 diff。
-2. 子代理只返回 findings，不直接修改文件。
-3. 如果当前环境不支持子代理或新上下文审查，则降级为当前 Codex 按 code review stance 审查。
+1. 当前 Codex 先基于 review brief 审查业务语义、PLAN / TASK / ANALYSIS 一致性、AGENTS.md / constitution 规则、workflow 阶段边界和最终输出优先级。
+2. 如果用户已显式调用 `$porter-codex-plugin:review`，且当前环境支持 `multi_agent_v1.spawn_agent` 的 `code-reviewer` 子代理或等价的新上下文大模型，使用 `agent_type="code-reviewer"` 委托子代理审查 review brief 和 diff。
+3. 子代理只做“通用工程审查”，例如：空指针、未定义值、边界条件、SQL / shell / JSON / Markdown frontmatter / 配置是否明显不可运行、并发竞态、状态不一致、错误处理遗漏、测试缺口、diff 遗漏、命名不一致、历史引用未清干净、secret 泄露、危险命令和权限边界破坏。
+4. 子代理不应单独裁决业务意图、配置取舍、删除策略、workflow 阶段边界，或任何需要当前长上下文和用户历史要求才能判断的产品决策。
+5. 子代理只返回 findings，不直接修改文件；返回内容必须包含事实依据和文件位置。
+6. 当前 Codex 负责结果合并：保留有 diff 或文件事实支撑的问题；把依赖业务背景但证据不足的问题降级为 Open Questions 或丢弃；最终 findings 仍由当前 Codex 按 P0-P3 排序输出。
+7. 如果当前环境不支持子代理或新上下文审查，则降级为当前 Codex 按同一审查清单完成审查。
 
 降级不是失败。不同 Codex 环境能力不同，但 `$porter-codex-plugin:review` 的入口、目标和输出格式必须保持一致。
 
