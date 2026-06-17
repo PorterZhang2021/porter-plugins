@@ -7,9 +7,10 @@ description: 将当前分支推送到远端并创建 Pull Request，适合需要
 
 将当前分支推送到远端并创建 Pull Request，适合需要 Code Review 的场景。
 
-> 与 `$porter-codex-plugin:merge-to-main` 平行使用：
+> 与合并类 skill 平行使用：
 > - 需要 Review → `$porter-codex-plugin:create-pr`（push 分支 + 开 PR，由团队合并）
-> - 直接合并 → `$porter-codex-plugin:merge-to-main`（本地合并后 push，适合个人项目）
+> - worktree 直接合并 → `$porter-codex-plugin:merge-worktree-to-base`
+> - branch 直接合并 → `$porter-codex-plugin:merge-branch-to-base`
 
 ## 前置条件
 
@@ -20,16 +21,20 @@ description: 将当前分支推送到远端并创建 Pull Request，适合需要
 
 1. **确认当前分支**
    - 获取当前分支名，记为 `<current>`
-   - 检测远端默认主分支：
+   - 优先读取创建分支时记录的 base：
+     ```bash
+     git config --get "branch.$CURRENT.porter-base"
+     ```
+   - 若 `porter-base` 不存在，再 fallback 到远端默认主分支：
      ```bash
      git remote show origin | grep 'HEAD branch' | awk '{print $NF}'
      ```
-   - 记为 `<base>`
+   - 记为 `<base>`。worktree workflow 和 branch workflow 都应优先使用 `porter-base`，避免覆盖用户创建分支时确认过的 base。
    - 如果已在 `<base>` 上，终止并提示用户切换到功能分支
 
 2. **检查工作区是否干净**
    - 运行 `git status`
-   - 如有未提交的变更，提示用户先使用 `$porter-codex-plugin:commit` 提交，终止流程
+   - 如有未提交的变更，提示用户先使用对应 workflow 的 commit skill 提交，终止流程
 
 3. **检查 `gh` CLI**
    - 运行 `gh auth status`
@@ -88,6 +93,6 @@ description: 将当前分支推送到远端并创建 Pull Request，适合需要
 ## 完整链路
 
 ```
-$porter-codex-plugin:new-branch → $porter-codex-plugin:plan → $porter-codex-plugin:task → $porter-codex-plugin:execute → $porter-codex-plugin:review? → $porter-codex-plugin:commit → $porter-codex-plugin:create-pr     # 需要 PR Review
-$porter-codex-plugin:new-branch → $porter-codex-plugin:plan → $porter-codex-plugin:task → $porter-codex-plugin:execute → $porter-codex-plugin:review? → $porter-codex-plugin:commit → $porter-codex-plugin:merge-to-main  # 直接合并
+$porter-codex-plugin:new-branch-worktree → $porter-codex-plugin:plan-worktree → $porter-codex-plugin:task-worktree → $porter-codex-plugin:execute-worktree → $porter-codex-plugin:review-worktree? → $porter-codex-plugin:commit-worktree → $porter-codex-plugin:create-pr
+$porter-codex-plugin:new-branch → $porter-codex-plugin:plan-branch → $porter-codex-plugin:task-branch → $porter-codex-plugin:execute-branch → $porter-codex-plugin:review-branch? → $porter-codex-plugin:commit-branch → $porter-codex-plugin:create-pr
 ```

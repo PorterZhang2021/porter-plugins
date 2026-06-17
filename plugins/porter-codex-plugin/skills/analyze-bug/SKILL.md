@@ -19,7 +19,7 @@ Bug 分析的标准流程：复现问题 → 定位根因 → 输出分析报告
 - 本 skill 只做 Bug 分析，只允许产出或更新 `ANALYSIS.md`。
 - 即使用户在分析阶段说"修一下"、"全部处理"、"继续做"，也不得直接修改代码或生成 `TASK.md`。
 - 分析完成后必须停止，先询问用户是否还要补充或调整分析内容。
-- 如果用户确认分析无补充，再提示用户显式调用 `$porter-codex-plugin:task` 进入下一阶段。
+- 如果用户确认分析无补充，再提示用户按当前 workflow 显式调用 `$porter-codex-plugin:task-worktree` 或 `$porter-codex-plugin:task-branch` 进入下一阶段。
 - 分析完成后必须同步写入 `plan/fix/<branch-name>/WORKFLOW_STATE.json`，状态为 `awaiting_task`；该状态由 Porter workflow hook 用于阻止越阶段修改实现文件。
 
 ```mermaid
@@ -46,7 +46,7 @@ flowchart TD
 
 ### 检查分支类型
 验证当前是否在 `fix/*` 分支上：
-- 如果是 `main`/`master`：建议先运行 `$porter-codex-plugin:new-branch fix/<bug-name>`
+- 如果是 `main`/`master`：建议先运行 `$porter-codex-plugin:new-branch-worktree fix/<bug-name>` 或 `$porter-codex-plugin:new-branch fix/<bug-name>`
 - 如果不是 `fix/*`：警告用户但继续执行
 
 ### 收集错误信息
@@ -107,7 +107,7 @@ flowchart TD
 {
   "state": "awaiting_task",
   "current_skill": "$porter-codex-plugin:analyze-bug",
-  "next_skill": "$porter-codex-plugin:task",
+  "next_skill": "$porter-codex-plugin:task-worktree 或 $porter-codex-plugin:task-branch",
   "allowed_outputs": [
     "plan/fix/<branch-name>/ANALYSIS.md",
     "plan/fix/<branch-name>/WORKFLOW_STATE.json"
@@ -123,7 +123,7 @@ flowchart TD
 
 下一步：
   1. 还有要补充或调整分析内容的吗？
-  2. 如果没有，请显式调用 $porter-codex-plugin:task 生成修复任务清单（推荐，确保 TDD）
+  2. 如果没有，请按当前 workflow 显式调用 $porter-codex-plugin:task-worktree 或 $porter-codex-plugin:task-branch 生成修复任务清单（推荐，确保 TDD）
 
 TDD 提醒：fix 类型必须遵循：
   1. 先写复现测试（红）
@@ -136,5 +136,5 @@ TDD 提醒：fix 类型必须遵循：
 - ❌ 分析阶段不要直接修改代码修复 bug
 - ❌ 不要跳过复现直接看代码
 - ❌ 分析报告中不要包含具体修复代码
-- ❌ 不要自动调用或执行 $porter-codex-plugin:task / $porter-codex-plugin:execute
+- ❌ 不要自动调用或执行 task / execute 阶段 skill
 - ❌ 不要把自然语言"继续"、"修一下"当作进入任务或执行阶段的授权

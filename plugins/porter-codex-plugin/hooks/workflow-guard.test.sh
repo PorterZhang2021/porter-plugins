@@ -21,11 +21,24 @@ setup_repo() {
   git -C "$tmp/repo" worktree add -b fix/demo "$tmp/repo/.codex/worktrees/fix/demo" master >/dev/null
 }
 
+setup_branch_repo() {
+  local tmp=$1
+  mkdir -p "$tmp/repo"
+  git -C "$tmp/repo" init >/dev/null
+  git -C "$tmp/repo" config user.email test@example.com
+  git -C "$tmp/repo" config user.name Test
+  echo init > "$tmp/repo/README.md"
+  git -C "$tmp/repo" add README.md
+  git -C "$tmp/repo" commit -m init >/dev/null
+  git -C "$tmp/repo" branch -M master
+  git -C "$tmp/repo" switch -c fix/demo >/dev/null
+}
+
 write_state() {
-  local worktree=$1
+  local repo=$1
   local state=$2
-  mkdir -p "$worktree/plan/fix/demo"
-  cat > "$worktree/plan/fix/demo/WORKFLOW_STATE.json" <<EOF
+  mkdir -p "$repo/plan/fix/demo"
+  cat > "$repo/plan/fix/demo/WORKFLOW_STATE.json" <<EOF
 {"state":"$state","next_skill":"porter-codex-plugin:task"}
 EOF
 }
@@ -114,8 +127,59 @@ test_execution_state_allows_implementation_edit() {
   pass "executing allows implementation edit"
 }
 
+test_branch_awaiting_task_blocks_implementation_edit() {
+  local tmp repo payload output status
+  tmp=$(mktemp -d)
+  setup_branch_repo "$tmp"
+  repo="$tmp/repo"
+  write_state "$repo" awaiting_task
+
+  payload='{"tool_name":"apply_patch","tool_input":{"file_path":"plugins/porter-codex-plugin/skills/analyze-bug/SKILL.md"}}'
+  set +e
+  output=$(run_guard "$repo" "$payload" 2>&1)
+  status=$?
+  set -e
+
+  [ "$status" -ne 0 ] || fail "branch awaiting_task should block implementation edit"
+  [[ "$output" == *'$porter-codex-plugin:task'* ]] || fail "branch awaiting_task block should mention task skill"
+  pass "branch awaiting_task blocks implementation edit"
+}
+
+test_branch_awaiting_execute_blocks_implementation_edit() {
+  local tmp repo payload output status
+  tmp=$(mktemp -d)
+  setup_branch_repo "$tmp"
+  repo="$tmp/repo"
+  write_state "$repo" awaiting_execute
+
+  payload='{"tool_name":"apply_patch","tool_input":{"file_path":"plugins/porter-codex-plugin/skills/execute/SKILL.md"}}'
+  set +e
+  output=$(run_guard "$repo" "$payload" 2>&1)
+  status=$?
+  set -e
+
+  [ "$status" -ne 0 ] || fail "branch awaiting_execute should block implementation edit"
+  [[ "$output" == *'$porter-codex-plugin:execute'* ]] || fail "branch awaiting_execute block should mention execute skill"
+  pass "branch awaiting_execute blocks implementation edit"
+}
+
+test_branch_execution_state_allows_implementation_edit() {
+  local tmp repo payload
+  tmp=$(mktemp -d)
+  setup_branch_repo "$tmp"
+  repo="$tmp/repo"
+  write_state "$repo" executing
+
+  payload='{"tool_name":"apply_patch","tool_input":{"file_path":"plugins/porter-codex-plugin/skills/execute/SKILL.md"}}'
+  run_guard "$repo" "$payload" >/dev/null
+  pass "branch executing allows implementation edit"
+}
+
 test_awaiting_task_blocks_implementation_edit
 test_awaiting_task_allows_analysis_update
 test_worktree_blocks_main_repo_write
 test_awaiting_execute_blocks_implementation_edit
 test_execution_state_allows_implementation_edit
+test_branch_awaiting_task_blocks_implementation_edit
+test_branch_awaiting_execute_blocks_implementation_edit
+test_branch_execution_state_allows_implementation_edit

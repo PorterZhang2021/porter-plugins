@@ -9,7 +9,7 @@ description: 根据用户意图推荐合适的 Porter Codex 工作流 skill
 
 ## 使用场景
 
-- 用户不确定应该运行 `$porter-codex-plugin:plan`、`$porter-codex-plugin:task`、`$porter-codex-plugin:execute`、`$porter-codex-plugin:review` 还是 `$porter-codex-plugin:commit`
+- 用户不确定应该运行 worktree workflow 还是 branch workflow
 - 用户描述了一个目标，但没有指定工作流入口
 - 用户想了解 Codex 插件里有哪些可用 skill
 
@@ -17,14 +17,21 @@ description: 根据用户意图推荐合适的 Porter Codex 工作流 skill
 
 | 用户意图 | 推荐 skill |
 | --- | --- |
-| 开始新功能或修复 | `$porter-codex-plugin:new-branch` |
-| 梳理方案或设计 | `$porter-codex-plugin:plan` |
-| 拆分任务清单 | `$porter-codex-plugin:task` |
-| 执行已有任务 | `$porter-codex-plugin:execute` |
+| 开始新功能或修复（轻量串行） | `$porter-codex-plugin:new-branch` |
+| 开始新功能或修复（并行隔离） | `$porter-codex-plugin:new-branch-worktree` |
+| 梳理方案或设计（branch） | `$porter-codex-plugin:plan-branch` |
+| 梳理方案或设计（worktree） | `$porter-codex-plugin:plan-worktree` |
+| 拆分任务清单（branch） | `$porter-codex-plugin:task-branch` |
+| 拆分任务清单（worktree） | `$porter-codex-plugin:task-worktree` |
+| 执行已有任务（branch） | `$porter-codex-plugin:execute-branch` |
+| 执行已有任务（worktree） | `$porter-codex-plugin:execute-worktree` |
 | 分析 Bug 根因 | `$porter-codex-plugin:analyze-bug` |
-| 提交前审查 / 检查实现是否有问题 | `$porter-codex-plugin:review` |
-| 提交当前改动 | `$porter-codex-plugin:commit` |
-| 合并回主分支 | `$porter-codex-plugin:merge-to-main` |
+| 提交前审查 / 检查实现是否有问题（branch） | `$porter-codex-plugin:review-branch` |
+| 提交前审查 / 检查实现是否有问题（worktree） | `$porter-codex-plugin:review-worktree` |
+| 提交当前改动（branch） | `$porter-codex-plugin:commit-branch` |
+| 提交当前改动（worktree） | `$porter-codex-plugin:commit-worktree` |
+| 合并回 base（branch） | `$porter-codex-plugin:merge-branch-to-base` |
+| 合并回 base（worktree） | `$porter-codex-plugin:merge-worktree-to-base` |
 | 创建 Pull Request | `$porter-codex-plugin:create-pr` |
 | 编写 Codex 项目操作手册 | `$porter-codex-plugin:codex-md` |
 | 配置 Codex 权限规则 | `$porter-codex-plugin:codex-permissions` |
