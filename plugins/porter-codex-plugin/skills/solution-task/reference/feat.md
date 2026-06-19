@@ -1,105 +1,105 @@
-# feat — Solution Task Reference
+# feat — Solution Task 参考
 
-## Read From SOLUTION.md
+## 读取 SOLUTION.md
 
-- `Goal`
-- `Scope`
-- `Type-Specific Analysis`
-- `Visual Model`
-- `Proposed Changes`
-- `Acceptance`
-- `Risks`
+- `目标`
+- `范围`
+- `类型专项分析`
+- `视觉模型`
+- `拟议变更`
+- `验收标准`
+- `风险`
 
-## TDD Rule
+## TDD 规则
 
-Feature work that changes executable behavior must follow Red / Green / Refactor:
+会改变可执行行为的 feature 工作必须遵循 Red / Green / Refactor：
 
-1. **Red** — write behavior tests first and confirm they fail for the missing behavior.
-2. **Green** — implement the smallest change that makes the behavior tests pass.
-3. **Refactor** — clean up structure after tests are green, then verify tests still pass.
+1. **Red** — 先写行为测试，并确认测试因目标行为缺失而失败。
+2. **Green** — 做最小实现变更，让行为测试通过。
+3. **Refactor** — 测试绿色后再清理结构，并确认测试仍然通过。
 
-Do not generate a feature implementation task before the behavior test task unless the solution is explicitly documentation/configuration-only and has no executable behavior.
+除非 solution 明确只是文档/配置变更且没有可执行行为，否则不要在行为测试任务之前生成 feature 实现任务。
 
-## Behavior Spec Structure
+## 行为规格结构
 
-Each behavior test task must describe behavior with this structure:
+每个行为测试任务必须按以下结构描述行为：
 
-- Case: one sentence describing the behavior scenario.
-- Given: precondition, state, input, fixture, or mock setup.
-- When: user action, API call, command, or system event.
-- Then: expected user-visible or system-visible outcome.
-- Assert / Verify: concrete assertion, file output, state change, returned value, emitted event, or observable result.
+- 用例：用一句话描述行为场景。
+- Given：前置条件、状态、输入、fixture 或 mock 设置。
+- When：用户操作、API 调用、命令或系统事件。
+- Then：用户可见或系统可见的预期结果。
+- 断言 / 验证：具体断言、文件输出、状态变化、返回值、事件或可观察结果。
 
-Use domain behavior names instead of implementation function names when writing test cases.
+编写测试用例时，使用领域行为名称，不使用实现函数名称。
 
-## Task Types
+## 任务类型
 
-- Behavior specification and failing test tasks.
-- Minimal implementation tasks.
-- Refactor tasks after tests are green.
-- Final verification tasks.
-- Structure validation tasks for Markdown/JSON-only changes.
+- 行为规格和失败测试任务。
+- 最小实现任务。
+- 测试绿色后的重构任务。
+- 最终验证任务。
+- 仅 Markdown/JSON 变更的结构验证任务。
 
-## Ordering
+## 顺序
 
-- Put behavior spec and failing tests before implementation.
-- Put minimal implementation after tests are red.
-- Put refactor after tests are green.
-- Put final verification after implementation and refactor.
-- For Markdown-only skill or reference changes, write "无业务逻辑，无需测试；通过结构审查验证".
+- 行为规格和失败测试必须放在实现前。
+- 测试进入 Red 状态后，才放置最小实现任务。
+- 测试绿色后，才放置重构任务。
+- 实现和重构后，再放置最终验证任务。
+- 仅 Markdown 的 skill 或 reference 变更，写"无业务逻辑，无需测试；通过结构审查验证"。
 
-## Template
+## 模板
 
 ```markdown
-## Task N: <feature behavior>
+## Task N：<功能行为>
 
-### Red: Behavior Test
+### Red：行为测试
 
 - [ ] **[测试]** `<test_path>`
-  - Case: <behavior scenario>
-  - Given: <precondition, input, fixture, or mock>
-  - When: <action, API call, command, or event>
-  - Then: <expected behavior>
-  - Assert / Verify: <specific assertion or observable output>
-- [ ] 验收标准：test captures the target behavior from SOLUTION.md Acceptance
-- [ ] 验证方式：test fails before implementation for the expected reason
+  - 用例： <行为场景>
+  - Given： <前置条件、输入、fixture 或 mock>
+  - When： <动作、API 调用、命令或事件>
+  - Then： <预期行为>
+  - 断言 / 验证： <具体断言或可观察输出>
+- [ ] 验收标准：测试覆盖 SOLUTION.md 验收标准中的目标行为
+- [ ] 验证方式：实现前测试因预期原因失败
 
-### Green: Minimal Implementation
+### Green：最小实现
 
 - [ ] **[实现]** `<file_path>`
-  - <smallest change needed to pass the behavior test>
-- [ ] 验收标准：target behavior from SOLUTION.md Acceptance is satisfied
-- [ ] 验证方式：target behavior test passes
+  - <让行为测试通过所需的最小变更>
+- [ ] 验收标准：SOLUTION.md 验收标准中的目标行为已满足
+- [ ] 验证方式：目标行为测试通过
 
 ### Refactor
 
 - [ ] **[重构]** `<file_path>`
-  - <cleanup allowed only after tests are green>
-- [ ] 验收标准：structure is improved without changing accepted behavior
-- [ ] 验证方式：target and related tests still pass
+  - <仅在测试绿色后允许的结构清理>
+- [ ] 验收标准：结构得到改善，且不改变已验收行为
+- [ ] 验证方式：目标测试和相关测试仍然通过
 ```
 
-## Documentation Or Configuration Only Template
+## 仅文档或配置模板
 
 ```markdown
-## Task N: <feature unit>
+## Task N：<功能单元>
 
 无业务逻辑，无需测试；通过结构审查验证。
 
-- [ ] <create or update file>
-- [ ] <define behavior, fields, or rules>
-- [ ] 验收标准：<documentation/configuration result expected by SOLUTION.md Acceptance>
-- [ ] 验证方式：<structure check, command, or review method>
+- [ ] <创建或更新文件>
+- [ ] <定义行为、字段或规则>
+- [ ] 验收标准：<SOLUTION.md 验收标准中预期的文档/配置结果>
+- [ ] 验证方式：<结构检查、命令或审查方式>
 ```
 
-## Validation
+## 验证
 
-- Behavior tasks include Case / Given / When / Then / Assert or Verify.
-- Implementation tasks follow failing behavior tests.
-- Refactor tasks happen only after tests are green.
-- Final verification records the test or observable check used.
+- 行为任务包含用例 / Given / When / Then / 断言或验证。
+- 实现任务位于失败的行为测试之后。
+- 重构任务只能在测试绿色后发生。
+- 最终验证记录使用的测试或可观察检查。
 - Every task includes `验收标准` and `验证方式`.
-- Skill frontmatter validates when skill files are generated.
-- Markdown fences are balanced.
-- JSON examples parse when present.
-- Output paths point to `.codex/timeline/<branch-type>/<branch-name>/`.
+- 生成 skill 文件时，skill frontmatter 必须可验证。
+- Markdown 代码围栏成对闭合。
+- 存在 JSON 示例时，JSON 示例可以解析。
+- 输出路径指向 `.codex/timeline/<timeline-name>/`。

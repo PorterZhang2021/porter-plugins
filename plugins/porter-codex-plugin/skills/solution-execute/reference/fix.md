@@ -1,31 +1,31 @@
-# fix — Solution Execute Reference
+# fix — Solution Execute 参考
 
-## Read From TASK.md
+## 读取 TASK.md
 
-- Reproduction test tasks.
-- Minimal fix tasks.
-- Regression verification tasks.
+- 复现测试任务。
+- 最小修复任务。
+- 回归验证任务。
 
-## Execution Order
+## 执行顺序
 
-Strict order:
+严格顺序：
 
-1. **Reproduce** — write or run the reproduction test and confirm it fails for the known issue.
-2. **Fix** — make the smallest change that addresses the root cause.
-3. **Verify** — confirm the reproduction test passes and related regression checks still pass.
-4. **Update `TASK.md`** — mark tasks complete only after verification evidence is available.
+1. **Reproduce** — 编写或运行复现测试，并确认它因已知问题而失败。
+2. **Fix** — 做解决根因的最小变更。
+3. **Verify** — 确认复现测试通过，相关回归检查也通过。
+4. **更新 `TASK.md`** — 只有验证证据可用后，才能标记任务完成。
 
-## Verification
+## 验证
 
-- Reproduction must fail for the expected reason before the fix.
-- The fix must make the reproduction pass.
-- Regression verification must cover the standard recorded in `SOLUTION.md` / `TASK.md`.
+- 修复前，复现必须因预期原因失败。
+- 修复必须让复现测试通过。
+- 回归验证必须覆盖 `SOLUTION.md` / `TASK.md` 中记录的标准。
 
-## TASK.md Update
+## TASK.md 更新
 
-- Do not mark the fix task complete until the reproduction passes after the change.
-- Record failed reproduction, different failure reasons, or regression limitations in `TASK.md`.
+- 变更后复现通过前，不得把 fix 任务标记为完成。
+- 在 `TASK.md` 中记录复现失败、不同失败原因或回归限制。
 
-## Stop And Review
+## 停止并进入 review
 
-Stop and enter review if the issue cannot be reproduced, the failure reason differs from `SOLUTION.md`, the root cause is contradicted, or the fix would exceed the accepted scope.
+如果问题无法复现、失败原因不同于 `SOLUTION.md`、根因被证伪，或修复会超出已接受范围，停止并进入 review。

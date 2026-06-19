@@ -1,32 +1,32 @@
-# docs — Solution Task Reference
+# docs — Solution Task 参考
 
-## Read From SOLUTION.md
+## 读取 SOLUTION.md
 
-- `Goal`
-- `Scope`
-- `Type-Specific Analysis`
-- `Proposed Changes`
-- `Acceptance`
+- `目标`
+- `范围`
+- `类型专项分析`
+- `拟议变更`
+- `验收标准`
 
-## Task Types
+## 任务类型
 
-- Draft or update documentation.
-- Check structure, links, and terminology.
-- Validate examples when present.
+- 起草或更新文档。
+- 检查结构、链接和术语。
+- 存在示例时验证示例。
 
-## Ordering
+## 顺序
 
-- Write content tasks before review tasks.
-- Use "无业务逻辑，无需测试；通过结构审查验证" for docs-only changes.
+- 先写内容任务，再写审查任务。
+- 仅文档变更使用"无业务逻辑，无需测试；通过结构审查验证"。
 
-## Template
+## 模板
 
 ```markdown
-## Task N: <document section>
+## Task N：<文档章节>
 
 无业务逻辑，无需测试；通过结构审查验证。
 
-- [ ] Update `<doc_path>`
-- [ ] 验收标准：<documentation outcome expected by SOLUTION.md Acceptance>
-- [ ] 验证方式：headings, links, examples, terminology, and referenced paths are checked
+- [ ] 更新 `<doc_path>`
+- [ ] 验收标准：<SOLUTION.md 验收标准中预期的文档结果>
+- [ ] 验证方式：标题、链接、示例、术语和引用路径已检查
 ```

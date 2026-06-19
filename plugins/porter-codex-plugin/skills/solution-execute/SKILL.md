@@ -1,6 +1,6 @@
 ---
 name: solution-execute
-description: Execute tasks from the active solution timeline slice, update slice state, and support review-remediation execution in the solution workflow
+description: 执行 active solution timeline slice 的任务，更新 slice state，并支持 review 回修执行
 allowed-tools:
   - Bash
   - Read
@@ -10,29 +10,29 @@ allowed-tools:
   - Grep
 ---
 
-# Solution Execute
+# Solution Execute 执行
 
-Execute the active slice task file for the solution workflow:
+执行 solution workflow 中 active slice 的任务文件：
 
 ```text
 solution -> solution-task -> solution-execute -> solution-review
 ```
 
-This skill reads `current.json` to locate the active slice and updates that slice's task and state files.
+本 skill 通过 `current.json` 定位 active slice，并更新该 slice 的 task 和 state 文件。
 
-## Phase Boundary
+## 阶段边界
 
-- Execute the current allowed solution task work.
-- Update active slice task file.
-- Update active slice state file.
-- In review-remediation mode only, update active slice solution file when the active slice review file shows changed assumptions, acceptance, root cause, or bottleneck analysis.
-- Do not execute review.
-- Do not commit.
-- Do not merge, push, or create PR.
-- Stop after execution and ask the user whether to supplement, adjust, or continue unfinished tasks.
-- If there is no further adjustment, prompt the user to explicitly call `$porter-codex-plugin:solution-review`.
+- 执行当前允许的 solution task 工作。
+- 更新 active slice 的 task 文件。
+- 更新 active slice 的 state 文件。
+- 仅在 review 回修模式中，当 active slice review 文件说明假设、验收标准、根因或瓶颈分析变化时，才更新 active slice 的 solution 文件。
+- 不执行 review。
+- 不提交。
+- 不合并、不 push、不 create PR。
+- 执行完成后停止，询问用户是否要补充、调整或继续未完成任务。
+- 如果没有进一步调整，提示用户显式调用 `$porter-codex-plugin:solution-review`。
 
-New slice paths:
+新 slice 路径：
 
 ```text
 .codex/timeline/<timeline-name>/current.json
@@ -42,70 +42,70 @@ New slice paths:
 .codex/timeline/<timeline-name>/states/<slice-id>-<type>-<slug>.json
 ```
 
-## Invocation
+## 调用方式
 
 ```text
 $porter-codex-plugin:solution-execute
 ```
 
-No command arguments are required.
+无需命令参数。
 
-## Path Resolution
+## 路径解析
 
-`solution-execute` does not create a new slice id.
+`solution-execute` 不创建新的 slice id。
 
-timeline name resolution:
+timeline name 解析顺序：
 
-1. If the user explicitly confirmed a timeline name in the current conversation, use it.
-2. Otherwise use the current `<branch-name>` as the default timeline name.
-3. If the default `.codex/timeline/<timeline-name>/current.json` does not exist, scan `.codex/timeline/*/current.json`.
-4. Use the scanned timeline only when exactly one `current.json` points to a state that allows `$porter-codex-plugin:solution-execute`.
-5. If there is no match or more than one match, stop and ask the user to name the timeline explicitly.
+1. 如果用户在本轮对话中明确确认了 timeline name，使用该名称。
+2. 否则使用当前 `<branch-name>` 作为默认 timeline name。
+3. 如果默认 `.codex/timeline/<timeline-name>/current.json` 不存在，扫描 `.codex/timeline/*/current.json`。
+4. 只有当扫描结果中恰好一个 `current.json` 指向允许 `$porter-codex-plugin:solution-execute` 的 state 时，才使用该 timeline。
+5. 如果没有匹配或存在多个匹配，停止并请用户明确 timeline name。
 
-Before execution:
+执行前：
 
-1. If `.codex/timeline/<timeline-name>/current.json` exists, use it first.
-2. Read `current.json` and resolve active slice files:
+1. 如果 `.codex/timeline/<timeline-name>/current.json` 存在，优先使用它。
+2. 读取 `current.json` 并解析 active slice 文件：
    - `solution`
    - `task`
    - `review`
    - `state`
-3. Read the `state` path resolved from `current.json`, normally `states/<slice>.json`.
-4. If `current.json` does not exist but old `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json` exists, enter old-path in-flight completion mode:
-   - solution file maps to `.codex/timeline/<branch-type>/<branch-name>/SOLUTION.md`
-   - task file maps to `.codex/timeline/<branch-type>/<branch-name>/TASK.md`
-   - review file maps to `.codex/timeline/<branch-type>/<branch-name>/REVIEW.md`
-   - state file maps to `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json`
-   - continue only when the old state allows `$porter-codex-plugin:solution-execute`
-5. New slice creation must use the new path and belongs only to `$porter-codex-plugin:solution`.
+3. 读取 `current.json` 解析出的 `state` 路径，通常是 `states/<slice>.json`。
+4. 如果 `current.json` 不存在，但旧 `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json` 存在，进入旧路径在途收尾模式：
+   - solution 文件映射到 `.codex/timeline/<branch-type>/<branch-name>/SOLUTION.md`
+   - task 文件映射到 `.codex/timeline/<branch-type>/<branch-name>/TASK.md`
+   - review 文件映射到 `.codex/timeline/<branch-type>/<branch-name>/REVIEW.md`
+   - state 文件映射到 `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json`
+   - 只有旧 state 允许 `$porter-codex-plugin:solution-execute` 时才继续
+5. 新 slice 创建必须使用新路径，并且只能由 `$porter-codex-plugin:solution` 完成。
 
-## Prerequisites
+## 前置条件
 
-1. Confirm `AGENTS.md` exists.
-2. Confirm `.codex/constitution.md` exists.
-3. Confirm the current branch is not `main` or `master`.
-4. Read the current branch name and confirm it matches `<branch-type>/<branch-name>`.
-5. Resolve active slice through `current.json`, or enter old-path in-flight completion when no `current.json` exists and old `WORKFLOW_STATE.json` exists.
+1. 确认 `AGENTS.md` 存在。
+2. 确认 `.codex/constitution.md` 存在。
+3. 确认当前分支不是 `main` 或 `master`。
+4. 读取当前分支名，并确认符合 `<branch-type>/<branch-name>`。
+5. 通过 `current.json` 解析 active slice；如果没有 `current.json` 但存在旧 `WORKFLOW_STATE.json`，进入旧路径在途收尾模式。
 
-Required active slice files:
+必须存在的 active slice 文件：
 
-- solution file
-- task file
-- state file
+- solution 文件
+- task 文件
+- state 文件
 
-Review-remediation mode also requires:
+review 回修模式还需要：
 
-- review file
+- review 文件
 
-Do not read old workflow inputs:
+不要读取旧 workflow 输入：
 
-- Do not read `plan/<type>/<branch-name>/PLAN.md`.
-- Do not read `plan/<type>/<branch-name>/ANALYSIS.md`.
-- Do not read old `plan/` workflow state.
+- 不读取 `plan/<type>/<branch-name>/PLAN.md`。
+- 不读取 `plan/<type>/<branch-name>/ANALYSIS.md`。
+- 不读取旧 `plan/` workflow state。
 
 ## current.json
 
-`current.json` is the active slice pointer, not workflow state.
+`current.json` 是 active slice 指针，不是 workflow state。
 
 ```json
 {
@@ -118,32 +118,32 @@ Do not read old workflow inputs:
 }
 ```
 
-## State Gate
+## 状态门
 
-Read the resolved state file before execution.
+执行前必须读取解析出的 state 文件。
 
-- New path mode reads the `state` file resolved from `current.json`, normally `states/<slice>.json`.
-- Old-path in-flight completion mode reads `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json`.
+- 新路径模式读取 `current.json` 解析出的 `state` 文件，通常是 `states/<slice>.json`。
+- 旧路径在途收尾模式读取 `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json`。
 
-Allowed states:
+允许状态：
 
 - `awaiting_solution_execute`
 - `executing_solution`
 - `awaiting_solution_execute_from_review`
 - `executing_solution_remediation`
 
-If the state is missing or not in this list, stop and prompt the user to explicitly call the `next_skill` recorded in the state file.
+如果 state 缺失或不在上述列表中，停止并提示用户显式调用 state 文件中记录的 `next_skill`。
 
-Do not continue without explicit state.
+没有明确 state 时不得继续。
 
-## First Execution Mode
+## 首次执行模式
 
-Use this mode for:
+以下状态使用此模式：
 
 - `awaiting_solution_execute`
 - `executing_solution`
 
-Before modifying implementation, documentation, configuration, or task files, write:
+在修改实现、文档、配置或 task 文件前，先写入：
 
 ```json
 {
@@ -163,17 +163,17 @@ Before modifying implementation, documentation, configuration, or task files, wr
 }
 ```
 
-Then:
+然后：
 
-1. Read active slice solution file.
-2. Read active slice task file.
-3. Read selected type from solution file Type Decision.
-4. Load `solution-execute/reference/<type>.md`.
-5. Continue the first `[~]` task if one exists; otherwise execute the first `[ ]` task.
-6. Mark a task `[x]` only after its `验证方式` passes or the verification limitation is recorded.
-7. Update the active slice task file after each completed task or substep.
+1. 读取 active slice 的 solution 文件。
+2. 读取 active slice 的 task 文件。
+3. 从 solution 文件的`类型决策`读取选定 type。
+4. 加载 `solution-execute/reference/<type>.md`。
+5. 如果存在第一个 `[~]` 任务，继续该任务；否则执行第一个 `[ ]` 任务。
+6. 只有在任务的 `验证方式` 通过或已记录验证限制后，才能把任务标记为 `[x]`。
+7. 每完成一个任务或子步骤后，更新 active slice 的 task 文件。
 
-When all tasks are complete, write:
+当所有任务完成后，写入：
 
 ```json
 {
@@ -192,14 +192,14 @@ When all tasks are complete, write:
 }
 ```
 
-## Review-Remediation Mode
+## 审查回修模式
 
-Use this mode for:
+以下状态使用此模式：
 
 - `awaiting_solution_execute_from_review`
 - `executing_solution_remediation`
 
-Before modifying implementation, documentation, configuration, task file, or solution file, write:
+在修改实现、文档、配置、task 文件或 solution 文件前，先写入：
 
 ```json
 {
@@ -220,23 +220,23 @@ Before modifying implementation, documentation, configuration, task file, or sol
 }
 ```
 
-Then:
+然后：
 
-1. Read active slice review file.
-2. Read active slice task file.
-3. Read active slice solution file when the review conclusion affects solution assumptions, acceptance, root cause, or bottleneck analysis.
-4. If review reports implementation defects, update implementation/config/docs files and task file.
-5. If review reports missing tasks, update task file and execute the new or unfinished tasks.
-6. If review reports changed assumptions, acceptance, root cause, or bottleneck analysis, update solution file and then sync task file.
-7. If review reports that user confirmation is required before remediation, stop and ask for that decision. Do not continue stale remediation.
+1. 读取 active slice 的 review 文件。
+2. 读取 active slice 的 task 文件。
+3. 当 review 结论影响 solution 假设、验收标准、根因或瓶颈分析时，读取 active slice 的 solution 文件。
+4. 如果 review 报告实现缺陷，更新实现、配置或文档文件，并同步 task 文件。
+5. 如果 review 报告任务缺失，更新 task 文件并执行新增或未完成任务。
+6. 如果 review 报告假设、验收标准、根因或瓶颈分析变化，更新 solution 文件，然后同步 task 文件。
+7. 如果 review 说明回修前需要用户确认，停止并询问该决策。不要继续执行过期回修。
 
-When remediation is complete, write the same `awaiting_solution_review` state used by first execution.
+回修完成后，写入与首次执行相同的 `awaiting_solution_review` state。
 
-## Type Routing
+## 类型路由
 
-Read selected type from solution file Type Decision, then load:
+从 solution 文件的`类型决策`读取选定 type，然后加载：
 
-| Type | Reference |
+| 类型 | 参考文件 |
 | --- | --- |
 | `feat` | `reference/feat.md` |
 | `fix` | `reference/fix.md` |
@@ -249,19 +249,19 @@ Read selected type from solution file Type Decision, then load:
 | `chore` | `reference/chore.md` |
 | `style` | `reference/style.md` |
 
-If selected type is missing or unsupported, stop and prompt the user to return to `$porter-codex-plugin:solution`.
+如果选定 type 缺失或不支持，停止并提示用户回到 `$porter-codex-plugin:solution`。
 
-`mvp` is not a slice type.
+`mvp` 不是 slice type。
 
-## Execution Rules
+## 执行规则
 
-- Follow task file order unless a task explicitly says it can run independently.
-- Continue `[~]` before starting another `[ ]` task.
-- Do not mark a task complete without observable evidence.
-- If verification fails, leave the task unchecked or `[~]`, record the limitation or failure, and stop for user confirmation unless the next step is obvious and still inside the task.
-- For documentation or configuration-only tasks, structure review, diff review, markdown fence checks, JSON validation, or skill frontmatter validation can be enough evidence.
-- For code or executable configuration changes, run the relevant tests, commands, lint, build, dry-run, benchmark, or manual verification described in the task.
-- Do not skip review; completion always transitions to `$porter-codex-plugin:solution-review`.
+- 除非任务明确说明可独立执行，否则按 task 文件顺序执行。
+- 开始新的 `[ ]` 任务前，先继续已有 `[~]` 任务。
+- 没有可观察证据时，不得把任务标记为完成。
+- 如果验证失败，保持任务未勾选或 `[~]`，记录限制或失败原因；除非下一步明显仍在任务范围内，否则停止等待用户确认。
+- 对仅修改文档或配置的任务，结构审查、diff 审查、Markdown 围栏检查、JSON 校验或 skill frontmatter 校验可以作为证据。
+- 对代码或可执行配置变更，运行任务中描述的相关测试、命令、lint、build、dry-run、benchmark 或手动验证。
+- 不跳过 review；完成后始终转入 `$porter-codex-plugin:solution-review`。
 
 ## 旧路径在途收尾
 
@@ -273,8 +273,8 @@ If selected type is missing or unsupported, stop and prompt the user to return t
 - 不自动迁移旧文件。
 - 不删除旧文件。
 
-## Completion Prompt
+## 收尾提示
 
-After execution completes, stop and ask:
+执行完成后停止，并询问：
 
 **"执行阶段已完成。还有要补充、调整或继续执行的任务吗？如果没有，请显式调用 `$porter-codex-plugin:solution-review` 做审查。"**

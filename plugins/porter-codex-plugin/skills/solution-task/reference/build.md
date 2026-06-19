@@ -1,48 +1,48 @@
-# build — Solution Task Reference
+# build — Solution Task 参考
 
-## Read From SOLUTION.md
+## 读取 SOLUTION.md
 
-- `Goal`
-- `Scope`
-- `Type-Specific Analysis`
-- `Acceptance`
-- `Risks`
+- `目标`
+- `范围`
+- `类型专项分析`
+- `验收标准`
+- `风险`
 
-## Task Types
+## 任务类型
 
-- Build config changes.
-- Script or package metadata changes.
-- Build command verification.
-- Artifact verification.
+- 构建配置变更。
+- 脚本或包元数据变更。
+- 构建命令验证。
+- 产物验证。
 
-## Ordering
+## 顺序
 
-- Modify configuration before validation.
-- Always include the build command or structural verification command when available.
-- Always verify the expected artifact when the build produces one.
-- If the build has no persistent artifact, record why and verify the observable output instead.
+- 先修改配置，再验证。
+- 如有构建命令或结构验证命令，必须纳入任务。
+- 构建产生预期产物时，必须验证该产物。
+- 如果构建没有持久产物，记录原因，并验证可观察输出。
 
-## Template
+## 模板
 
 ```markdown
-## Task N: <build change>
+## Task N：<构建变更>
 
 无业务逻辑，无需测试；通过构建验证和产物验证。
 
-- [ ] Update `<config_path>`
-- [ ] 运行构建：<build command or structural check>
-- [ ] 验收标准：<expected build behavior or artifact state from SOLUTION.md Acceptance>
-- [ ] 验证方式：<build command, structural check, or downstream load check>
-- [ ] 产物验证：<artifact path, file list, metadata, size, manifest, package, or generated output>
-- [ ] 记录无产物原因：<only when the build does not produce a persistent artifact>
+- [ ] 更新 `<config_path>`
+- [ ] 运行构建：<构建命令或结构检查>
+- [ ] 验收标准：<SOLUTION.md 验收标准中预期的构建行为或产物状态>
+- [ ] 验证方式：<构建命令、结构检查或下游加载检查>
+- [ ] 产物验证：<产物路径、文件列表、元数据、大小、manifest、package 或生成输出>
+- [ ] 记录无产物原因：<仅当构建不产生持久产物时填写>
 ```
 
-## Artifact Verification
+## 产物验证
 
 产物验证至少覆盖一项：
 
-- Expected artifact path exists.
-- Expected generated file list matches the build goal.
-- Package, bundle, manifest, checksum, version, or metadata is correct.
-- Generated output can be inspected or loaded by the expected downstream tool.
-- No stale artifact from a previous build is being mistaken for the new output.
+- 预期产物路径存在。
+- 预期生成文件列表匹配构建目标。
+- package、bundle、manifest、checksum、version 或 metadata 正确。
+- 生成输出可被检查或由预期下游工具加载。
+- 没有把上一次构建的旧产物误当成本次新输出。

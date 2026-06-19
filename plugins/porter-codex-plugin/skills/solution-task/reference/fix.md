@@ -1,76 +1,76 @@
-# fix — Solution Task Reference
+# fix — Solution Task 参考
 
-## Read From SOLUTION.md
+## 读取 SOLUTION.md
 
-- `Problem`
-- `Type-Specific Analysis`
-- `Acceptance`
-- `Risks`
+- `问题`
+- `类型专项分析`
+- `验收标准`
+- `风险`
 
-Required fix analysis fields:
+fix 分析必填字段：
 
-- Bug description
-- Reproduction steps
-- Expected vs actual behavior
-- Root cause analysis
-- Fix plan
-- Regression standard
+- Bug 描述
+- 复现步骤
+- 预期行为 vs 实际行为
+- 根因分析
+- 修复方案
+- 回归标准
 
-## Hard Stop
+## 强制停止
 
-Stop and return to `$porter-codex-plugin:solution` if reproduction steps, root cause, or regression standard are missing.
+如果缺少复现步骤、根因或回归标准，停止并回到 `$porter-codex-plugin:solution`。
 
-## Task Types
+## 任务类型
 
-- Reproduction test tasks.
-- Minimal fix tasks.
-- Regression verification tasks.
+- 复现测试任务。
+- 最小修复任务。
+- 回归验证任务。
 
-## Ordering
+## 顺序
 
-Fixed order:
+固定顺序：
 
-1. Reproduction test.
-2. Minimal fix.
-3. Regression verification.
+1. 复现测试。
+2. 最小修复。
+3. 回归验证。
 
-Do not generate a fix implementation task before the reproduction or regression path is defined.
+复现路径或回归路径未定义前，不要生成 fix 实现任务。
 
-## Conditional Execution
+## 条件执行
 
-- The generated fix task list may include the planned minimal fix, but execution must treat it as conditional.
-- If the reproduction test does not reproduce the issue, fails for a different reason, or contradicts the root cause analysis, the executor must not continue with the planned fix.
-- In that case, the next loop should update `REVIEW.md` first, then let review-remediation execution update `TASK.md` and, when the root cause changed, `SOLUTION.md`.
+- 生成的 fix task list 可以包含计划中的最小修复，但执行阶段必须把它视为有条件任务。
+- 如果复现测试没有复现问题、失败原因不同，或与根因分析矛盾，执行者不得继续执行原计划修复。
+- 这种情况下，下一轮应先更新 `REVIEW.md`，再由 review 回修执行更新 `TASK.md`；如果根因变化，再更新 `SOLUTION.md`。
 
-## No Business Logic Label
+## 无业务逻辑标签
 
-`fix` tasks usually must not be marked "无业务逻辑，无需测试" because a fix needs reproduction and regression evidence.
+`fix` 任务通常不得标注"无业务逻辑，无需测试"，因为 fix 需要复现和回归证据。
 
-Only use "无业务逻辑，无需测试；通过结构审查验证" when the fix is limited to Markdown/JSON configuration text, task template wording, documentation, or other non-executable structure, and the regression standard can be verified by structure review.
+只有当 fix 限定于 Markdown/JSON 配置文本、任务模板措辞、文档或其它不可执行结构，并且回归标准可以通过结构审查验证时，才使用"无业务逻辑，无需测试；通过结构审查验证"。
 
-## Template
+## 模板
 
 ```markdown
-## Task 1: Reproduction Test
+## Task 1：复现测试
 
 - [ ] **[测试]** `<test_path>`
-  - Given: <bug precondition>
-  - When: <trigger>
-  - Then: <expected correct behavior; currently fails>
-- [ ] 验收标准：the known bug is reproducible and tied to the expected regression standard
-- [ ] 验证方式：test fails for the known issue before the fix
+  - Given： <bug 前置条件>
+  - When： <触发条件>
+  - Then： <预期正确行为；当前失败>
+- [ ] 验收标准：已知 bug 可复现，且与预期回归标准相关
+- [ ] 验证方式：修复前测试因已知问题失败
 
-## Task 2: Minimal Fix
+## Task 2：最小修复
 
 - [ ] **[修复]** `<file_path>`
-  - <smallest change that addresses root cause>
-- [ ] 前置条件：reproduction test fails for the expected reason before this task starts
-- [ ] 验收标准：root cause is addressed without widening the fix scope
-- [ ] 验证方式：reproduction test passes
+  - <解决根因的最小变更>
+- [ ] 前置条件：此任务开始前，复现测试因预期原因失败
+- [ ] 验收标准：根因已解决，且未扩大修复范围
+- [ ] 验证方式：复现测试通过
 
-## Task 3: Regression Verification
+## Task 3：回归验证
 
-- [ ] Run related regression checks
-- [ ] 验收标准：regression standard from SOLUTION.md Acceptance is satisfied
-- [ ] 验证方式：original bug stays fixed and adjacent behavior still works
+- [ ] 运行相关回归检查
+- [ ] 验收标准：SOLUTION.md 验收标准中的回归标准已满足
+- [ ] 验证方式：原 bug 保持修复状态，邻近行为仍正常
 ```

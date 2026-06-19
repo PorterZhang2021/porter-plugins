@@ -1,33 +1,33 @@
-# perf — Solution Execute Reference
+# perf — Solution Execute 参考
 
-## Read From TASK.md
+## 读取 TASK.md
 
-- Baseline measurement or collection plan tasks.
-- Bottleneck confirmation tasks.
-- Optimization implementation tasks.
-- Post-optimization verification tasks.
+- 基线度量或采集计划任务。
+- 瓶颈确认任务。
+- 优化实现任务。
+- 优化后验证任务。
 
-## Execution Order
+## 执行顺序
 
-1. Collect or confirm baseline data.
-2. Confirm the bottleneck.
-3. Implement the optimization only if the baseline and bottleneck still support it.
-4. Measure after the optimization.
-5. Compare against baseline.
-6. Update `TASK.md`.
+1. 采集或确认基线数据。
+2. 确认瓶颈。
+3. 只有基线和瓶颈仍支持该方向时，才实现优化。
+4. 优化后再次度量。
+5. 与基线对比。
+6. 更新 `TASK.md`.
 
-## Verification
+## 验证
 
-- Baseline command, input, environment, and result must be recorded when available.
-- Optimization must preserve accepted behavior.
-- Post-optimization measurement must be compared with baseline.
-- If no durable metric is possible, record the limitation and observable evidence.
+- 有可用基线时，必须记录命令、输入、环境和结果。
+- 优化必须保持已接受行为不变。
+- 优化后度量必须与基线对比。
+- 如果无法形成持久指标，记录限制和可观察证据。
 
-## TASK.md Update
+## TASK.md 更新
 
-- Do not mark optimization complete before post-change measurement or recorded limitation.
-- Record baseline, comparison result, and any changed bottleneck assumption.
+- 变更后度量或限制记录完成前，不得标记优化完成。
+- 记录基线、对比结果和任何变化的瓶颈假设。
 
-## Stop And Review
+## 停止并进入 review
 
-Stop and enter review if baseline data contradicts the expected bottleneck, optimization direction becomes stale, or accepted performance criteria need to change.
+如果基线数据与预期瓶颈矛盾、优化方向过期，或已接受的性能标准需要变化，停止并进入 review。

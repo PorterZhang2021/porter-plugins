@@ -1,26 +1,26 @@
-# docs — Solution Execute Reference
+# docs — Solution Execute 参考
 
-## Read From TASK.md
+## 读取 TASK.md
 
-- Documentation writing tasks.
-- Structure, link, terminology, and example validation tasks.
+- 文档编写任务。
+- 结构、链接、术语和示例验证任务。
 
-## Execution Order
+## 执行顺序
 
-1. Update the requested documentation files.
-2. Validate headings, links, examples, terminology, and referenced paths.
-3. Update `TASK.md`.
+1. 更新指定文档文件。
+2. 验证标题、链接、示例、术语和引用路径。
+3. 更新 `TASK.md`.
 
-## Verification
+## 验证
 
-- Documentation-only work can use structure review, link/path checks, markdown fence checks, or diff review.
-- Examples should be checked when they are executable or path-sensitive.
+- 纯文档工作可以使用结构审查、链接/路径检查、Markdown 围栏检查或 diff 审查验证。
+- 示例如果可执行或对路径敏感，需要检查。
 
-## TASK.md Update
+## TASK.md 更新
 
-- Mark docs tasks `[x]` after the requested content exists and validation evidence is recorded.
-- Record missing source material or unresolved wording decisions before stopping.
+- 指定内容存在且验证证据已记录后，才能把 docs 任务标记为 `[x]`。
+- 停止前记录缺失的素材或未解决的措辞决策。
 
-## Stop And Review
+## 停止并进入 review
 
-Stop and enter review if documentation reveals missing product behavior, contradicts `SOLUTION.md`, or needs a scope change.
+如果文档揭示缺失的产品行为、与 `SOLUTION.md` 矛盾，或需要范围变更，停止并进入 review。

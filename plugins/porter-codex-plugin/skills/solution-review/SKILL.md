@@ -1,6 +1,6 @@
 ---
 name: solution-review
-description: Review the active solution timeline slice after solution-execute, write the slice review file, and update explicit slice state for pass or remediation
+description: 在 solution-execute 后审查 active solution timeline slice，写入 slice review 文件，并根据通过或回修结论更新 state
 allowed-tools:
   - Bash
   - Read
@@ -10,94 +10,94 @@ allowed-tools:
   - Grep
 ---
 
-# Solution Review
+# Solution Review 审查
 
-Review the active slice after `$porter-codex-plugin:solution-execute`:
+在 `$porter-codex-plugin:solution-execute` 后审查 active slice：
 
 ```text
 solution -> solution-task -> solution-execute -> solution-review
 ```
 
-This skill writes a durable review file for the active slice and updates the active slice state.
+本 skill 为 active slice 写入可追踪的 review 文件，并更新 active slice state。
 
-## Phase Boundary
+## 阶段边界
 
-- Review only the current active solution workflow result.
-- Write or update active slice review file.
-- Write or update active slice state file.
-- Do not modify implementation, documentation, or configuration files outside review outputs.
-- Do not update task file.
-- Do not update solution file.
-- Do not execute fixes.
-- Do not commit.
-- Do not merge, push, or create PR.
-- Stop after review and prompt the user to call the next explicit skill.
+- 只审查当前 active solution workflow 结果。
+- 写入或更新 active slice 的 review 文件。
+- 写入或更新 active slice 的 state 文件。
+- 不修改 review 输出之外的实现、文档或配置文件。
+- 不更新 task 文件。
+- 不更新 solution 文件。
+- 不执行修复。
+- 不提交。
+- 不合并、不 push、不 create PR。
+- review 完成后停止，并提示用户调用下一个明确 skill。
 
-New slice review outputs:
+新 slice 的 review 输出：
 
 ```text
 .codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.md
 .codex/timeline/<timeline-name>/states/<slice-id>-<type>-<slug>.json
 ```
 
-## Invocation
+## 调用方式
 
 ```text
 $porter-codex-plugin:solution-review
 ```
 
-No command arguments are required.
+无需命令参数。
 
-## Path Resolution
+## 路径解析
 
-`solution-review` does not create a new slice id.
+`solution-review` 不创建新的 slice id。
 
-timeline name resolution:
+timeline name 解析顺序：
 
-1. If the user explicitly confirmed a timeline name in the current conversation, use it.
-2. Otherwise use the current `<branch-name>` as the default timeline name.
-3. If the default `.codex/timeline/<timeline-name>/current.json` does not exist, scan `.codex/timeline/*/current.json`.
-4. Use the scanned timeline only when exactly one `current.json` points to a state that allows `$porter-codex-plugin:solution-review`.
-5. If there is no match or more than one match, stop and ask the user to name the timeline explicitly.
+1. 如果用户在本轮对话中明确确认了 timeline name，使用该名称。
+2. 否则使用当前 `<branch-name>` 作为默认 timeline name。
+3. 如果默认 `.codex/timeline/<timeline-name>/current.json` 不存在，扫描 `.codex/timeline/*/current.json`。
+4. 只有当扫描结果中恰好一个 `current.json` 指向允许 `$porter-codex-plugin:solution-review` 的 state 时，才使用该 timeline。
+5. 如果没有匹配或存在多个匹配，停止并请用户明确 timeline name。
 
-Before review:
+review 前：
 
-1. If `.codex/timeline/<timeline-name>/current.json` exists, use it first.
-2. Read `current.json` and resolve active slice files:
+1. 如果 `.codex/timeline/<timeline-name>/current.json` 存在，优先使用它。
+2. 读取 `current.json` 并解析 active slice 文件：
    - `solution`
    - `task`
    - `review`
    - `state`
-3. Read active slice state from `states/<slice>.json`.
-4. If `current.json` does not exist but old `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json` exists, enter old-path in-flight completion mode:
-   - solution file maps to `.codex/timeline/<branch-type>/<branch-name>/SOLUTION.md`
-   - task file maps to `.codex/timeline/<branch-type>/<branch-name>/TASK.md`
-   - review file maps to `.codex/timeline/<branch-type>/<branch-name>/REVIEW.md`
-   - state file maps to `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json`
-   - continue only when the old state allows `$porter-codex-plugin:solution-review`
-5. New slice creation must use the new path and belongs only to `$porter-codex-plugin:solution`.
+3. 从 `states/<slice>.json` 读取 active slice state。
+4. 如果 `current.json` 不存在，但旧 `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json` 存在，进入旧路径在途收尾模式：
+   - solution 文件映射到 `.codex/timeline/<branch-type>/<branch-name>/SOLUTION.md`
+   - task 文件映射到 `.codex/timeline/<branch-type>/<branch-name>/TASK.md`
+   - review 文件映射到 `.codex/timeline/<branch-type>/<branch-name>/REVIEW.md`
+   - state 文件映射到 `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json`
+   - 只有旧 state 允许 `$porter-codex-plugin:solution-review` 时才继续
+5. 新 slice 创建必须使用新路径，并且只能由 `$porter-codex-plugin:solution` 完成。
 
-## Prerequisites
+## 前置条件
 
-1. Confirm `AGENTS.md` exists.
-2. Confirm `.codex/constitution.md` exists.
-3. Confirm the current branch is not `main` or `master`.
-4. Read the current branch name and confirm it matches `<branch-type>/<branch-name>`.
-5. Resolve active slice through `current.json`, or enter old-path in-flight completion when no `current.json` exists and old `WORKFLOW_STATE.json` exists.
+1. 确认 `AGENTS.md` 存在。
+2. 确认 `.codex/constitution.md` 存在。
+3. 确认当前分支不是 `main` 或 `master`。
+4. 读取当前分支名，并确认符合 `<branch-type>/<branch-name>`。
+5. 通过 `current.json` 解析 active slice；如果没有 `current.json` 但存在旧 `WORKFLOW_STATE.json`，进入旧路径在途收尾模式。
 
-Required active slice files:
+必须存在的 active slice 文件：
 
-- solution file
-- task file
-- state file
+- solution 文件
+- task 文件
+- state 文件
 
-Optional active slice file:
+可选 active slice 文件：
 
-- review file, if present and needed to verify remediation
+- review 文件；仅在需要验证回修时读取
 
 ## current.json
 
-`current.json` is the active slice pointer, not workflow state.
+`current.json` 是 active slice 指针，不是 workflow state。
 
 ```json
 {
@@ -110,21 +110,21 @@ Optional active slice file:
 }
 ```
 
-## State Gate
+## 状态门
 
-Read active slice state before review.
+review 前必须读取 active slice state。
 
-Allowed state:
+允许状态：
 
 - `awaiting_solution_review`
 
-If the state is missing or is not `awaiting_solution_review`, stop and prompt the user to explicitly call the `next_skill` recorded in the state file.
+如果 state 缺失或不是 `awaiting_solution_review`，停止并提示用户显式调用 state 文件中记录的 `next_skill`。
 
-Do not continue without explicit state.
+没有明确 state 时不得继续。
 
-## Review Inputs
+## Review 输入
 
-Collect this context before writing the review file:
+写入 review 文件前收集以下上下文：
 
 ```bash
 git status --short
@@ -132,167 +132,167 @@ git diff
 git ls-files --others --exclude-standard
 ```
 
-Read:
+读取：
 
-- active slice solution file
-- active slice task file
-- active slice state file
-- active slice review file, if present and needed to verify remediation
-- in-scope untracked files reported by `git ls-files --others --exclude-standard`
+- active slice solution 文件
+- active slice task 文件
+- active slice state 文件
+- active slice review 文件，如果存在且需要用于验证回修
+- `git ls-files --others --exclude-standard` 报告的范围内未跟踪文件
 
-Build a review brief that includes:
+构建 review brief，包含：
 
-- Current goal and acceptance criteria from the solution file.
-- Completed and incomplete tasks from the task file.
-- Current change summary from `git status --short`.
-- Key diff excerpts or file paths from `git diff`.
-- In-scope untracked file contents that are not represented in `git diff`.
-- Risk points that need focused review.
+- solution 文件中的当前目标和验收标准。
+- task 文件中的已完成和未完成任务。
+- `git status --short` 中的当前变更摘要。
+- `git diff` 中的关键 diff 摘要或文件路径。
+- 未体现在 `git diff` 中的范围内未跟踪文件内容。
+- 需要重点审查的风险点。
 
-Do not read old workflow inputs:
+不要读取旧 workflow 输入：
 
-- Do not read `plan/<type>/<branch-name>/PLAN.md`.
-- Do not read `plan/<type>/<branch-name>/ANALYSIS.md`.
-- Do not read old `plan/` workflow state.
+- 不读取 `plan/<type>/<branch-name>/PLAN.md`。
+- 不读取 `plan/<type>/<branch-name>/ANALYSIS.md`。
+- 不读取旧 `plan/` workflow state。
 
-## Review Mechanism
+## Review 机制
 
-Use two-layer review. The current Codex owns workflow judgment and final result; a subagent only performs general engineering review when available.
+使用两层 review。当前 Codex 负责 workflow 判断和最终结论；子代理仅在可用时执行通用工程审查。
 
-Current Codex must review:
+当前 Codex 必须审查：
 
-- Business semantics and whether the result satisfies the solution file.
-- Solution / task consistency.
-- Solution workflow phase boundaries.
-- AGENTS.md and constitution rules.
-- Codex plugin path boundaries.
-- Final result and next workflow state.
+- 业务语义，以及结果是否满足 solution 文件。
+- Solution / task 一致性。
+- Solution workflow 阶段边界。
+- AGENTS.md 和 constitution 规则。
+- Codex plugin 路径边界。
+- 最终结果和下一个 workflow state。
 
-For the first normal review, use two-layer review by default when the environment supports a `code-reviewer` subagent or equivalent fresh-context review capability. Give the subagent the review brief and relevant diff. Ask only for general engineering findings with file facts.
+首次正常 review 时，如果环境支持 `code-reviewer` 子代理或等价的新上下文 review 能力，默认使用两层 review。把 review brief 和相关 diff 交给子代理，只要求其基于文件事实给出通用工程 findings。
 
-The subagent may check:
+子代理可以检查：
 
-- JSON, Markdown, and frontmatter validity.
-- State inconsistencies.
-- Missing validation evidence.
-- Naming or path inconsistencies.
-- Old workflow path remnants.
-- Dangerous commands, permission boundary issues, or secret risks.
-- Obvious correctness, regression, reliability, maintainability, or documentation issues.
+- JSON、Markdown 和 frontmatter 有效性。
+- State 不一致。
+- 缺少验证证据。
+- 命名或路径不一致。
+- 旧 workflow 路径残留。
+- 危险命令、权限边界问题或密钥风险。
+- 明显的正确性、回归、可靠性、可维护性或文档问题。
 
-The subagent must not decide:
+子代理不得决定：
 
-- Business intent.
-- Configuration retention or deletion choices.
-- Solution workflow phase boundaries.
-- Whether scope should be expanded.
-- Any decision that depends on current long-context user history.
+- 业务意图。
+- 配置保留或删除取舍。
+- Solution workflow 阶段边界。
+- 是否应扩大范围。
+- 任何依赖当前长上下文用户历史的决策。
 
-Current Codex must merge the results. Keep only findings supported by files, diff, or command output. Downgrade questions that need user judgment to `Open Questions`.
+当前 Codex 必须合并结果。只保留有文件、diff 或命令输出支持的发现。需要用户判断的问题降级为`待确认问题`。
 
-If subagent review is unavailable, complete the review in the current Codex context and record the reason in the review file Notes. This is a valid fallback, not a review failure.
+如果子代理 review 不可用，在当前 Codex 上下文完成 review，并在 review 文件的`备注`章节记录原因。这是有效降级，不是 review 失败。
 
-For remediation review:
+回修 review：
 
-1. Read the previous active slice review file only after confirming its Timeline Context matches the active slice id, solution path, task path, review path, and state path.
-2. If an existing review file belongs to an older slice or different context, treat it as stale and overwrite it as a first normal review.
-3. Verify whether matching prior findings were resolved.
-4. Use a subagent again when the remediation diff is large, involves executable behavior, the user explicitly asks for it, or the general engineering risk is high.
-5. If skipping subagent review, record the reason in the review file Notes.
+1. 只有在确认上一次 active slice review 文件的`时间线上下文`与当前 active slice id、solution 路径、task 路径、review 路径和 state 路径一致后，才读取该 review 文件。
+2. 如果已有 review 文件属于更早 slice 或不同上下文，将其视为过期文件，并按首次正常 review 覆盖。
+3. 验证对应的旧发现是否已经解决。
+4. 当回修 diff 较大、涉及可执行行为、用户明确要求，或通用工程风险较高时，再次使用子代理。
+5. 如果跳过子代理 review，在 review 文件的`备注`章节记录原因。
 
-## Review Checklist
+## Review 检查清单
 
-Check all of these before choosing a result:
+选择 result 前检查以下全部内容：
 
-- Solution goal, scope, and acceptance still hold.
-- Task items are all complete, or any incomplete item has a clear recorded reason.
-- Each completed task has validation evidence or a recorded limitation.
-- Current diff and in-scope untracked files only contain files allowed by this slice.
-- New or modified files stay under the Codex plugin path boundary when implementation/config files are changed.
-- No old `plan-*`, `execute-*`, `review-*`, or Claude-side configuration was changed unless explicitly required by the solution.
-- Markdown frontmatter is valid for modified skills.
-- JSON examples or state files are parseable.
-- Markdown code fences are balanced.
-- Workflow state can transition to the correct next stage.
-- Review output does not introduce states outside this solution loop.
+- Solution 的目标、范围和验收标准仍然成立。
+- Task 条目全部完成；如有未完成项，必须有清楚的记录原因。
+- 每个已完成任务都有验证证据或已记录限制。
+- 当前 diff 和范围内未跟踪文件只包含本 slice 允许的文件。
+- 修改实现或配置文件时，新增或修改文件仍在 Codex plugin 路径边界内。
+- 除非 solution 明确要求，否则没有修改旧 `plan-*`、`execute-*`、`review-*` 或 Claude 侧配置。
+- 已修改 skill 的 Markdown frontmatter 有效。
+- JSON 示例或 state 文件可以解析。
+- Markdown 代码围栏成对闭合。
+- 状态可以进入正确的下一阶段。
+- review 输出没有引入本 solution loop 之外的 state。
 
-## REVIEW.md Structure
+## REVIEW.md 结构
 
-Write the active slice review file using this structure:
+按以下结构写入 active slice review 文件：
 
 ```markdown
-# Review: <title>
+# 审查：<标题>
 
-## Timeline Context
+## 时间线上下文
 
-- Solution: `.codex/timeline/<timeline-name>/solutions/<slice-id>-<type>-<slug>.md`
-- Task: `.codex/timeline/<timeline-name>/tasks/<slice-id>-<type>-<slug>.md`
-- Review: `.codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.md`
-- State: `.codex/timeline/<timeline-name>/states/<slice-id>-<type>-<slug>.json`
-- Timeline: `.codex/timeline/<timeline-name>`
-- Active slice: `<slice-id>-<type>-<slug>`
-- Type: `<selected-type>`
+- 方案：`.codex/timeline/<timeline-name>/solutions/<slice-id>-<type>-<slug>.md`
+- 任务：`.codex/timeline/<timeline-name>/tasks/<slice-id>-<type>-<slug>.md`
+- 审查：`.codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.md`
+- 状态：`.codex/timeline/<timeline-name>/states/<slice-id>-<type>-<slug>.json`
+- 时间线：`.codex/timeline/<timeline-name>`
+- 当前切片：`<slice-id>-<type>-<slug>`
+- 类型：`<selected-type>`
 
-## Result
+## 结果
 
 <pass | needs-fix | needs-task-update | needs-solution-update>
 
-## Checks
+## 检查项
 
-- <structure, state, command, or review check>
+- <结构、state、命令或 review 检查>
 
-## Findings
+## 发现
 
-- <P0/P1/P2/P3 ordered findings; write "无" only when there are no findings>
+- <按 P0/P1/P2/P3 排序的发现；没有发现时写 "无">
 
-## Open Questions
+## 待确认问题
 
-- <questions requiring user confirmation; write "无" when none>
+- <需要用户确认的问题；没有时写 "无">
 
-## Notes
+## 备注
 
-- <non-blocking observations, subagent availability, or skip reasons>
+- <非阻塞观察、子代理可用性或跳过原因>
 
-## Next Step
+## 下一步
 
-<next explicit skill>
+<下一个明确 skill>
 ```
 
-`Result` must be exactly one of:
+`Result` 必须严格使用以下值之一：
 
 - `pass`
 - `needs-fix`
 - `needs-task-update`
 - `needs-solution-update`
 
-Findings must be ordered by severity: `P0`, `P1`, `P2`, then `P3`. Record non-blocking `P2` and `P3` findings even when there are no blocking issues.
+发现必须按严重程度排序：`P0`、`P1`、`P2`、`P3`。即使没有阻塞问题，也记录非阻塞的 `P2` 和 `P3` 发现。
 
-If no findings are found, write:
+没有发现时写入：
 
 ```text
 无
 ```
 
-If review finds scope, assumption, acceptance, root-cause, or bottleneck issues that need reconfirmation, use `needs-solution-update`. Do not introduce another state.
+如果 review 发现范围、假设、验收标准、根因或瓶颈问题需要重新确认，使用 `needs-solution-update`。不要引入其它 state。
 
-## Result Rules
+## Result 规则
 
-Use `pass` when:
+以下情况使用 `pass`：
 
-- Acceptance is satisfied.
-- Tasks are complete or any remaining item is explicitly non-blocking.
-- Validation evidence is present or limitations are recorded.
-- No `P0` or `P1` finding blocks commit.
+- 验收标准已经满足。
+- 任务已经完成，或剩余事项已明确记录为非阻塞。
+- 验证证据存在，或限制已记录。
+- 没有阻塞 commit 的 `P0` 或 `P1` finding。
 
-Use `needs-fix` when implementation, documentation, configuration, or validation output is wrong and requires remediation.
+当实现、文档、配置或验证输出有误并需要回修时，使用 `needs-fix`。
 
-Use `needs-task-update` when the task list is incomplete, stale, missing validation, or no longer represents the required work.
+当任务清单不完整、过期、缺少验证，或已经不能代表必要工作时，使用 `needs-task-update`。
 
-Use `needs-solution-update` when the solution assumptions, scope, acceptance, root cause, or bottleneck analysis needs to change or needs user reconfirmation.
+当 solution 的假设、范围、验收标准、根因或瓶颈分析需要变化，或需要用户重新确认时，使用 `needs-solution-update`。
 
-## State Outputs
+## 状态输出
 
-For `pass`, write active slice state:
+当结果为 `pass` 时，写入 active slice state：
 
 ```json
 {
@@ -311,7 +311,7 @@ For `pass`, write active slice state:
 }
 ```
 
-For `needs-fix`, `needs-task-update`, or `needs-solution-update`, write active slice state:
+当结果为 `needs-fix`、`needs-task-update` 或 `needs-solution-update` 时，写入 active slice state：
 
 ```json
 {
@@ -330,7 +330,7 @@ For `needs-fix`, `needs-task-update`, or `needs-solution-update`, write active s
 }
 ```
 
-Do not write task file or solution file during review. Remediation belongs to `$porter-codex-plugin:solution-execute`.
+review 阶段不得写入 task 文件或 solution 文件。回修属于 `$porter-codex-plugin:solution-execute`。
 
 ## 旧路径在途收尾
 
@@ -342,12 +342,12 @@ Do not write task file or solution file during review. Remediation belongs to `$
 - 不自动迁移旧文件。
 - 不删除旧文件。
 
-## Completion Prompt
+## 收尾提示
 
-If the result is `pass`, stop and say:
+如果结果为 `pass`，停止并提示：
 
 **"Review 已完成，结果为 pass。还有要补充审查的吗？如果没有，请显式调用 `$porter-codex-plugin:commit` 提交。"**
 
-If the result is `needs-fix`, `needs-task-update`, or `needs-solution-update`, stop and say:
+如果结果为 `needs-fix`、`needs-task-update` 或 `needs-solution-update`，停止并提示：
 
 **"Review 已完成，发现需要回修的内容。请确认后显式调用 `$porter-codex-plugin:solution-execute` 进入回修。"**

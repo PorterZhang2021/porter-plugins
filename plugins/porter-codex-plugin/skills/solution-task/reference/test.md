@@ -1,40 +1,40 @@
-# test — Solution Task Reference
+# test — Solution Task 参考
 
-## Read From SOLUTION.md
+## 读取 SOLUTION.md
 
-- `Goal`
-- `Scope`
-- `Type-Specific Analysis`
-- `Acceptance`
+- `目标`
+- `范围`
+- `类型专项分析`
+- `验收标准`
 
-## Task Types
+## 任务类型
 
-- Test file creation or update.
-- Test case design.
-- Test execution and verification.
+- 测试文件创建或更新。
+- 测试用例设计。
+- 测试执行和验证。
 
-## Ordering
+## 顺序
 
-- Generate only test-related tasks unless test infrastructure must be created.
-- Do not generate product implementation tasks for a `test` solution.
+- 只生成测试相关任务，除非必须创建测试基础设施。
+- 不为 `test` solution 生成产品实现任务。
 
-## No Business Logic Label
+## 无业务逻辑标签
 
-`test` tasks usually must not be marked "无业务逻辑，无需测试" because the purpose of the task is to create or verify test evidence.
+`test` 任务通常不得标注"无业务逻辑，无需测试"，因为任务目的就是创建或验证测试证据。
 
-Only use "无业务逻辑，无需测试；通过结构审查验证" when the task updates test documentation, test naming guidance, metadata, or non-executable test planning notes without adding or changing runnable tests.
+只有当任务仅更新测试文档、测试命名指南、元数据或不可执行的测试规划说明，且不新增或修改可运行测试时，才使用"无业务逻辑，无需测试；通过结构审查验证"。
 
-## Template
+## 模板
 
 ```markdown
-## Task N: <test area>
+## Task N：<测试范围>
 
-- [ ] Create or update `<test_path>`
-  - Case: <behavior>
-  - Given: <precondition>
-  - When: <action>
-  - Then: <assertion>
-  - Assert / Verify: <specific assertion or observable result>
-- [ ] 验收标准：test coverage matches the behavior or regression expected by SOLUTION.md Acceptance
-- [ ] 验证方式：run the relevant test command
+- [ ] 创建或更新 `<test_path>`
+  - 用例： <behavior>
+  - Given： <precondition>
+  - When： <动作>
+  - Then： <断言>
+  - 断言 / 验证： <specific assertion or observable result>
+- [ ] 验收标准：测试覆盖符合 SOLUTION.md 验收标准中预期的行为或回归要求
+- [ ] 验证方式：运行相关测试命令
 ```

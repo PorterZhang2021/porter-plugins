@@ -1,37 +1,37 @@
-# chore — Solution Task Reference
+# chore — Solution Task 参考
 
-## Read From SOLUTION.md
+## 读取 SOLUTION.md
 
-- `Goal`
-- `Scope`
-- `Type-Specific Analysis`
-- `Proposed Changes`
-- `Acceptance`
-- `Risks`
+- `目标`
+- `范围`
+- `类型专项分析`
+- `拟议变更`
+- `验收标准`
+- `风险`
 
-## Task Types
+## 任务类型
 
-- Metadata or configuration cleanup.
-- File organization changes.
-- Structural validation.
+- 元数据或配置清理。
+- 文件组织调整。
+- 结构验证。
 
-## Ordering
+## 顺序
 
-- Group tasks by affected area.
-- Add tests only if behavior, scripts, or executable configuration changes.
+- 按受影响区域组织任务。
+- 只有当行为、脚本或可执行配置发生变化时才补测试。
 
-## No Business Logic Label
+## 无业务逻辑标签
 
-`chore` tasks can use "无业务逻辑，无需测试；通过结构审查验证" when they only change metadata, Markdown/JSON configuration text, file organization notes, or non-executable housekeeping.
+当 `chore` 任务只修改元数据、Markdown/JSON 配置文本、文件组织说明或非可执行维护内容时，可以使用"无业务逻辑，无需测试；通过结构审查验证"。
 
-If a chore changes scripts, generated outputs, executable configuration, installation behavior, or user-visible workflow behavior, require a command, structural check, or targeted regression check instead of the no-test label.
+如果 `chore` 修改脚本、生成产物、可执行配置、安装行为或用户可见 workflow 行为，必须要求命令、结构检查或定向回归检查，不得只写无需测试标签。
 
-## Template
+## 模板
 
 ```markdown
-## Task N: <maintenance item>
+## Task N：<维护项>
 
 - [ ] <change>
-- [ ] 验收标准：<maintenance result expected by SOLUTION.md Acceptance>
-- [ ] 验证方式：<diff review, structural check, or command>
+- [ ] 验收标准：<SOLUTION.md 验收标准中预期的维护结果>
+- [ ] 验证方式：<diff 审查、结构检查或命令>
 ```

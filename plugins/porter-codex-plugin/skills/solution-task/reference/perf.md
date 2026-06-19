@@ -1,80 +1,80 @@
-# perf — Solution Task Reference
+# perf — Solution Task 参考
 
-## Read From SOLUTION.md
+## 读取 SOLUTION.md
 
-- `Type-Specific Analysis`
-- `Acceptance`
-- `Risks`
+- `类型专项分析`
+- `验收标准`
+- `风险`
 
-Required perf analysis fields:
+perf 分析必填字段：
 
-- Performance problem
-- Measurement method
-- Baseline data or collection plan
-- Bottleneck analysis
-- Optimization plan
-- Verification method
+- 性能问题
+- 度量方式
+- 基线数据或采集计划
+- 瓶颈分析
+- 优化方案
+- 验证方式
 
-## Hard Stop
+## 强制停止
 
-Stop and return to `$porter-codex-plugin:solution` if there is no baseline data and no baseline collection plan.
+如果既没有基线数据，也没有基线采集计划，停止并回到 `$porter-codex-plugin:solution`。
 
-## Task Types
+## 任务类型
 
-- Baseline measurement or collection plan tasks.
-- Bottleneck confirmation tasks.
-- Optimization implementation tasks.
-- Post-optimization verification tasks.
+- 基线度量或采集计划任务。
+- 瓶颈确认任务。
+- 优化实现任务。
+- 优化后验证任务。
 
-## Ordering
+## 顺序
 
-Fixed order:
+固定顺序：
 
-1. Baseline measurement or collection plan.
-2. Bottleneck confirmation.
-3. Optimization implementation.
-4. Post-optimization verification.
+1. 基线度量或采集计划。
+2. 瓶颈确认。
+3. 优化实现。
+4. 优化后验证。
 
-## Conditional Execution
+## 条件执行
 
-- The generated optimization task may describe the expected optimization path, but execution must treat it as conditional on baseline and bottleneck confirmation.
-- If the baseline data contradicts the expected bottleneck or makes the optimization plan invalid, the executor must not continue with the stale optimization task.
-- In that case, the next loop should update `REVIEW.md` first, then let review-remediation execution update `TASK.md` and, when the bottleneck or acceptance changed, `SOLUTION.md`.
+- 生成的优化任务可以描述预期优化路径，但执行阶段必须把它视为依赖基线和瓶颈确认的有条件任务。
+- 如果基线数据与预期瓶颈矛盾，或使优化方案失效，执行者不得继续执行过期的优化任务。
+- 这种情况下，下一轮应先更新 `REVIEW.md`，再由 review 回修执行更新 `TASK.md`；如果瓶颈或验收标准变化，再更新 `SOLUTION.md`。
 
-## No Business Logic Label
+## 无业务逻辑标签
 
-`perf` tasks usually must not be marked "无业务逻辑，无需测试" because optimization needs baseline and post-change measurement evidence.
+`perf` 任务通常不得标注"无业务逻辑，无需测试"，因为优化需要基线和变更后度量证据。
 
-Only use "无业务逻辑，无需测试；通过结构审查验证" when the perf change only documents measurement guidance, updates non-executable benchmark notes, or changes Markdown/JSON configuration text without altering runtime behavior. In that case, validation must still inspect the stated metric, baseline plan, or observable output.
+只有当 perf 变更仅记录度量指南、更新不可执行 benchmark 说明，或修改不影响运行时行为的 Markdown/JSON 配置文本时，才使用"无业务逻辑，无需测试；通过结构审查验证"。这种情况下，验证仍必须检查已声明的指标、基线计划或可观察输出。
 
-## Template
+## 模板
 
 ```markdown
-## Task 1: Baseline Measurement
+## Task 1：基线度量
 
-- [ ] Run or document baseline measurement
-- [ ] Record environment, input size, command, and result
-- [ ] 验收标准：baseline data or collection result is available before optimization
-- [ ] 验证方式：recorded command, input, environment, and baseline result can be inspected
+- [ ] 运行或记录基线度量
+- [ ] 记录环境、输入规模、命令和结果
+- [ ] 验收标准：优化前已有基线数据或采集结果
+- [ ] 验证方式：已记录的命令、输入、环境和基线结果可检查
 
-## Task 2: Bottleneck Confirmation
+## Task 2：瓶颈确认
 
-- [ ] Inspect bottleneck evidence
-- [ ] 验收标准：optimization target is justified by baseline and bottleneck evidence
-- [ ] 验证方式：bottleneck evidence is recorded and linked to the planned optimization
+- [ ] 检查瓶颈证据
+- [ ] 验收标准：优化目标有基线和瓶颈证据支撑
+- [ ] 验证方式：瓶颈证据已记录，并能关联到计划优化
 
-## Task 3: Optimization
+## Task 3：优化实现
 
 - [ ] **[优化]** `<file_path>`
-  - <optimization step>
-- [ ] 前置条件：baseline and bottleneck confirmation still support this optimization
-- [ ] 验收标准：optimization is implemented without changing accepted behavior
-- [ ] 验证方式：behavior checks still pass after optimization
+  - <优化步骤>
+- [ ] 前置条件：基线和瓶颈确认仍支持该优化
+- [ ] 验收标准：优化已实现，且不改变已验收行为
+- [ ] 验证方式：优化后行为检查仍然通过
 
-## Task 4: Performance Verification
+## Task 4：性能验证
 
-- [ ] Re-run measurement
-- [ ] Compare with baseline
-- [ ] 验收标准：performance target from SOLUTION.md Acceptance improves, or the limitation is explicitly recorded
-- [ ] 验证方式：post-optimization measurement is compared with baseline
+- [ ] 重新运行度量
+- [ ] 与基线对比
+- [ ] 验收标准：SOLUTION.md 验收标准中的性能目标有改善，或已明确记录限制
+- [ ] 验证方式：优化后度量已与基线对比
 ```

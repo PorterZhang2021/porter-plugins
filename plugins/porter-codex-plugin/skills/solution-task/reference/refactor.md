@@ -1,39 +1,39 @@
-# refactor — Solution Task Reference
+# refactor — Solution Task 参考
 
-## Read From SOLUTION.md
+## 读取 SOLUTION.md
 
-- `Goal`
-- `Scope`
-- `Type-Specific Analysis`
-- `Acceptance`
-- `Risks`
+- `目标`
+- `范围`
+- `类型专项分析`
+- `验收标准`
+- `风险`
 
-## Task Types
+## 任务类型
 
-- Baseline verification tasks.
-- Small refactor steps.
-- Regression verification tasks.
+- 基线验证任务。
+- 小步重构任务。
+- 回归验证任务。
 
-## Ordering
+## 顺序
 
-- Confirm existing behavior before changing structure.
-- Keep each refactor step small enough to verify independently.
-- If tests are missing for affected behavior, add coverage before refactoring.
+- 修改结构前先确认既有行为。
+- 每个重构步骤都要足够小，能够独立验证。
+- 如果受影响行为缺少测试，先补覆盖再重构。
 
-## No Business Logic Label
+## 无业务逻辑标签
 
-`refactor` tasks can use "无业务逻辑，无需测试；通过结构审查验证" only when the refactor is limited to Markdown/JSON structure, naming, task templates, or documentation-like configuration and does not affect executable behavior.
+只有当 refactor 限定于 Markdown/JSON 结构、命名、任务模板或文档式配置，且不影响可执行行为时，`refactor` 任务才可以使用"无业务逻辑，无需测试；通过结构审查验证"。
 
-For code or executable configuration refactors, do not use the no-test label; require baseline behavior verification and regression verification.
+对于代码或可执行配置重构，不要使用无需测试标签；必须要求基线行为验证和回归验证。
 
-## Template
+## 模板
 
 ```markdown
-## Task N: <refactor step>
+## Task N：<重构步骤>
 
-- [ ] Baseline verification: <existing test or manual check>
+- [ ] 基线验证： <existing test or manual check>
 - [ ] **[重构]** `<file_path>`
   - <structure-only change>
-- [ ] 验收标准：accepted behavior remains unchanged while the intended structure improves
-- [ ] 验证方式：<existing test, manual check, diff review, or command>
+- [ ] 验收标准：已验收行为保持不变，目标结构得到改善
+- [ ] 验证方式：<既有测试、手动检查、diff 审查或命令>
 ```

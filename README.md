@@ -64,7 +64,7 @@ Codex 使用独立插件入口，不再推荐逐个安装单个 skill。
 添加当前仓库作为 repo-local marketplace：
 
 ```bash
-codex plugin marketplace add /Users/poterzhang/AIProjects/claude-plugins
+codex plugin marketplace add /Users/porterzhang/AiCode/porter-plugins
 ```
 
 安装 Codex 插件：
@@ -74,6 +74,25 @@ codex plugin add porter-codex-plugin@porter-plugins
 ```
 
 安装后开启新线程，使插件 Skills 和 Hooks 生效。
+
+### 本地开发更新
+
+修改本仓库内 Codex 插件后，使用 plugin-creator 的 cachebuster helper 刷新插件版本后再重装：
+
+```bash
+python3 /Users/porterzhang/.codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py plugins/porter-codex-plugin
+python3 /Users/porterzhang/.codex/skills/.system/plugin-creator/scripts/read_marketplace_name.py --marketplace-path .agents/plugins/marketplace.json
+codex plugin add porter-codex-plugin@porter-plugins
+```
+
+重装后开启新 Codex 线程，使更新后的 Skills 和 Hooks 被加载。
+
+如果本机已经把 `porter-plugins` 配置为远端 Git marketplace，直接安装会使用远端快照。此时需要先提交并推送插件更新，再刷新 marketplace：
+
+```bash
+codex plugin marketplace upgrade porter-plugins
+codex plugin add porter-codex-plugin@porter-plugins
+```
 
 ### Codex 适配说明
 

@@ -1,30 +1,30 @@
-# test — Solution Execute Reference
+# test — Solution Execute 参考
 
-## Read From TASK.md
+## 读取 TASK.md
 
-- Test file creation or update tasks.
-- Test case design tasks.
-- Test execution and verification tasks.
+- 测试文件创建或更新任务。
+- 测试用例设计任务。
+- 测试执行和验证任务。
 
-## Execution Order
+## 执行顺序
 
-1. Create or update the requested tests.
-2. Run the relevant test command or record why it cannot be run.
-3. Update `TASK.md`.
+1. 创建或更新指定测试。
+2. 运行相关测试命令，或记录无法运行的原因。
+3. 更新 `TASK.md`.
 
-Do not generate product implementation work for a `test` solution unless the task explicitly says test infrastructure is missing.
+除非任务明确说明测试基础设施缺失，否则不要为 `test` solution 生成产品实现工作。
 
-## Verification
+## 验证
 
-- New tests should fail or pass according to the task's expected evidence.
-- Existing behavior coverage must match the acceptance criteria.
-- If execution is impossible, record the limitation and the closest structural check.
+- 新测试应按任务预期证据失败或通过。
+- 既有行为覆盖必须匹配验收标准。
+- 如果无法执行，记录限制和最接近的结构检查。
 
-## TASK.md Update
+## TASK.md 更新
 
-- Mark test tasks `[x]` only after the test command or recorded limitation is present.
-- Keep missing infrastructure or unclear behavior unchecked and stop for review or user confirmation.
+- 只有测试命令结果或限制记录存在后，才能把 test 任务标记为 `[x]`。
+- 缺失基础设施或行为不清楚时保持未勾选，并停止等待 review 或用户确认。
 
-## Stop And Review
+## 停止并进入 review
 
-Stop and enter review if tests require product changes outside scope, expected behavior is unclear, or the test result contradicts `SOLUTION.md`.
+如果测试需要范围外的产品变更、预期行为不清楚，或测试结果与 `SOLUTION.md` 矛盾，停止并进入 review。

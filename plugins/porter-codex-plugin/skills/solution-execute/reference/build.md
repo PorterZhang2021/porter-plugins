@@ -1,29 +1,29 @@
-# build — Solution Execute Reference
+# build — Solution Execute 参考
 
-## Read From TASK.md
+## 读取 TASK.md
 
-- Build configuration tasks.
-- Script or package metadata tasks.
-- Build command verification tasks.
-- Artifact verification tasks.
+- 构建配置任务。
+- 脚本或包元数据任务。
+- 构建命令验证任务。
+- 产物验证任务。
 
-## Execution Order
+## 执行顺序
 
-1. Modify build configuration or metadata.
-2. Run the build or structural validation command.
-3. Verify expected artifacts or record why no persistent artifact exists.
-4. Update `TASK.md`.
+1. 修改构建配置或元数据。
+2. 运行构建或结构验证命令。
+3. 验证预期产物，或记录为什么没有持久产物。
+4. 更新 `TASK.md`.
 
-## Verification
+## 验证
 
-- Build command or structural validation must be recorded when available.
-- Artifact verification checks path, file list, metadata, manifest, size, generated output, or downstream load behavior.
-- Avoid mistaking stale artifacts for new output.
+- 如有可用的构建命令或结构验证，必须记录。
+- 产物验证检查路径、文件列表、元数据、manifest、大小、生成输出或下游加载行为。
+- 避免把旧产物误当成本次新输出。
 
-## TASK.md Update
+## TASK.md 更新
 
-- Mark build tasks `[x]` only after build and artifact verification pass, or after no-artifact reasoning and observable output are recorded.
+- 只有在构建和产物验证通过，或已记录无产物原因与可观察输出后，才能把 build 任务标记为 `[x]`。
 
-## Stop And Review
+## 停止并进入 review
 
-Stop and enter review if the build cannot be verified, artifact expectations are unclear, or configuration changes affect scope beyond `SOLUTION.md`.
+如果构建无法验证、产物预期不清楚，或配置变更超出 `SOLUTION.md` 范围，停止并进入 review。

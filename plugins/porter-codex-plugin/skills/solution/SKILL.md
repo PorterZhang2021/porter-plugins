@@ -9,7 +9,7 @@ allowed-tools:
   - Grep
 ---
 
-# Solution Workshop
+# Solution 方案工作坊
 
 通过前置讨论澄清需求，并在用户确认后生成新 solution workflow 的方案文档。
 
@@ -64,7 +64,7 @@ $porter-codex-plugin:solution <问题或目标描述>
 
 正式写入前必须已有确认过的 type、目标、范围和最终描述，并且当前分支必须是非 `main` / `master` 的开发分支。
 
-## Pre-Solution Discussion（强制）
+## 前置方案讨论（强制）
 
 当用户未显式传入 type 或未确认范围时，必须进入前置讨论模式。
 
@@ -99,14 +99,14 @@ checkpoint 小结包含：
 
 ## 正式写入确认（强制）
 
-1. 如果用户还在描述需求，继续执行 Pre-Solution Discussion，不写文件。
+1. 如果用户还在描述需求，继续执行前置方案讨论，不写文件。
 2. 如果用户表达"好了，帮我写方案吧"、"确认，写方案"等写入意图，先回放讨论结论。
 3. 回放内容必须包含最终 type、目标、范围、最终描述、主要验收标准和是否需要拆分。
 4. 如果用户尚未确认 type、目标、范围或最终描述，继续讨论，不写文件。
 5. 正式写入前必须校验当前分支不是 `main` / `master`，且可解析为 `<branch-type>/<branch-name>`。
-6. 如果当前分支 type 或命名与最终 type、目标描述不一致，不阻塞写入；必须写入 Branch Rename Checkpoint，提示后续由 `$porter-codex-plugin:delivery-branch` 确认并执行 rename。
+6. 如果当前分支 type 或命名与最终 type、目标描述不一致，不阻塞写入；必须写入`分支重命名检查点`，提示后续由 `$porter-codex-plugin:delivery-branch` 确认并执行 rename。
 
-## Timeline Slice 路由
+## 时间线切片路由
 
 ### 路径选择
 
@@ -142,7 +142,7 @@ timeline name 解析顺序：
    - 如果旧 state 是 `awaiting_commit`，不继续旧路径，创建新的 timeline slice record。
 5. 新 slice 创建必须使用新路径，不再写固定旧 `SOLUTION.md` / `WORKFLOW_STATE.json`。
 
-### Slice id 生成
+### 切片 id 生成
 
 `solution` 是唯一创建新 slice id 的入口。
 
@@ -151,10 +151,10 @@ timeline name 解析顺序：
 - 扫描 `solutions/`、`tasks/`、`reviews/`、`states/` 下文件名开头的三位编号。
 - 取最大编号加一。
 - 没有任何编号时从 `001` 开始。
-- `<type>` 使用最终 selected type。
+- `<type>` 使用最终选定 type。
 - `<slug>` 使用 kebab-case，来自用户确认后的最终目标描述。
 
-Slice record id：
+切片记录 id：
 
 ```text
 <slice-id>-<type>-<slug>
@@ -244,7 +244,7 @@ ci
 
 ## 类型推荐参考
 
-| Type | 常见信号 |
+| 类型 | 常见信号 |
 | --- | --- |
 | `feat` | 新能力、新入口、用户可感知行为、新 workflow 能力 |
 | `fix` | 错误、异常、失败、不符合预期、回归问题 |
@@ -259,7 +259,7 @@ ci
 
 ## 类型模板
 
-| Type | Reference |
+| 类型 | 参考文件 |
 | --- | --- |
 | `feat` | `reference/feat.md` |
 | `fix` | `reference/fix.md` |
@@ -274,35 +274,35 @@ ci
 
 ## SOLUTION.md 骨架要求
 
-生成的 solution 文件必须包含：
+生成的 solution 文件必须包含以下固定章节：
 
-- Timeline Context
-- Type Decision
-- Branch Rename Checkpoint
-- Goal
-- Problem
-- Context Read
-- Scope
-- Type-Specific Analysis
-- Visual Model
-- Proposed Changes
-- Acceptance
-- Risks
-- Confirmation Needed
-- Next Step
+- 时间线上下文
+- 类型决策
+- 分支重命名检查点
+- 目标
+- 问题
+- 已读上下文
+- 范围
+- 类型专项分析
+- 视觉模型
+- 拟议变更
+- 验收标准
+- 风险
+- 待确认
+- 下一步
 
-`fix` 是分析型 reference。当 selected type 为 `fix` 时，必须完成复现与根因分析流程，并把结果写入 solution 文件。新 solution workflow 中不额外调用 `$porter-codex-plugin:analyze-bug`。
+`fix` 是分析型 reference。当选定 type 为 `fix` 时，必须完成复现与根因分析流程，并把结果写入 solution 文件。新 solution workflow 中不额外调用 `$porter-codex-plugin:analyze-bug`。
 
 ## 确认规则
 
-每次生成 solution 文件后，必须列出 `Confirmation Needed`。
+每次生成 solution 文件后，必须列出`待确认`。
 
 确认点应包含：
 
 - type 选择是否正确。
 - 范围边界是否正确。
 - 输出路径和 slice 命名是否正确。
-- 是否接受 Branch Rename Checkpoint。
+- 是否接受`分支重命名检查点`。
 - 是否有需要用户选择的方案取舍。
 - 风险和验收标准是否接受。
 - 是否可以进入 `$porter-codex-plugin:solution-task`。
@@ -311,4 +311,4 @@ ci
 
 生成 solution 文件、`states/<slice>.json` 和 `current.json` 后停止，询问：
 
-**"Solution 已生成。请先确认 Confirmation Needed。还有要补充或调整的吗？如果无需调整，请显式调用 `$porter-codex-plugin:solution-task` 生成任务清单。"**
+**"Solution 已生成。请先确认`待确认`章节。还有要补充或调整的吗？如果无需调整，请显式调用 `$porter-codex-plugin:solution-task` 生成任务清单。"**

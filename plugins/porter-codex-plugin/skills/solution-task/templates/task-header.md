@@ -1,22 +1,24 @@
-# Task: <title>
+# 任务：<标题>
 
-## Timeline Context
+## 时间线上下文
 
-- Solution: `.codex/timeline/<branch-type>/<branch-name>/SOLUTION.md`
-- Branch: `<branch-type>/<branch-name>`
-- Type: `<selected-type>`
-- Timeline path: `.codex/timeline/<branch-type>/<branch-name>/`
-- Next stage: `$porter-codex-plugin:solution-execute`
+- 方案：`.codex/timeline/<timeline-name>/solutions/<slice-id>-<type>-<slug>.md`
+- 时间线：`.codex/timeline/<timeline-name>/`
+- 当前切片：`<slice-id>-<type>-<slug>`
+- 状态：`.codex/timeline/<timeline-name>/states/<slice-id>-<type>-<slug>.json`
+- 分支：`<branch-type>/<branch-name>`
+- 类型：`<selected-type>`
+- 下一阶段：`$porter-codex-plugin:solution-execute`
 
-## Status Legend
+## 状态说明
 
-- `[ ]` pending
-- `[~]` in progress
-- `[x]` complete
+- `[ ]` 待处理
+- `[~]` 进行中
+- `[x]` 已完成
 
-## Execution Rule
+## 执行规则
 
-- Execute tasks in order unless a task explicitly says it can run independently.
-- Do not start implementation tasks before their prerequisite tests, reproduction steps, measurements, or validation setup are ready.
-- Mark each task complete only after its verification step passes or the verification limitation is recorded.
-- Every task must include `验收标准` and `验证方式`; do not mark a task complete without observable evidence.
+- 除非任务明确说明可独立执行，否则按顺序执行。
+- 前置测试、复现步骤、度量或验证准备完成前，不要开始实现任务。
+- 只有验证步骤通过或验证限制已记录后，才能把任务标记为完成。
+- 每个任务必须包含 `验收标准` 和 `验证方式`；没有可观察证据时不得标记完成。

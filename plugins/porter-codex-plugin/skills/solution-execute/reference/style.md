@@ -1,26 +1,26 @@
-# style — Solution Execute Reference
+# style — Solution Execute 参考
 
-## Read From TASK.md
+## 读取 TASK.md
 
-- Formatting tasks.
-- Naming consistency tasks.
-- Lint or style-only cleanup tasks.
+- 格式化任务。
+- 命名一致性任务。
+- Lint 或纯风格清理任务。
 
-## Execution Order
+## 执行顺序
 
-1. Apply formatting, naming, or lint-driven changes.
-2. Check diff for accidental behavior changes.
-3. Update `TASK.md`.
+1. 应用格式、命名或 lint 驱动的变更。
+2. 检查 diff，确认没有意外行为变更。
+3. 更新 `TASK.md`.
 
-## Verification
+## 验证
 
-- Formatter, lint, structure check, or diff review can verify style-only work.
-- No behavior changes should be introduced.
+- formatter、lint、结构检查或 diff 审查可用于验证纯风格工作。
+- 不应引入行为变更。
 
-## TASK.md Update
+## TASK.md 更新
 
-- Mark style tasks `[x]` after style verification and diff review pass.
+- 风格验证和 diff 审查通过后，才能把 style 任务标记为 `[x]`。
 
-## Stop And Review
+## 停止并进入 review
 
-Stop and enter review if style changes reveal behavior changes or require broader refactoring.
+如果 style 变更暴露行为变化或需要更大范围重构，停止并进入 review。

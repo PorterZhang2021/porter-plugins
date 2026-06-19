@@ -1,31 +1,31 @@
-# style — Solution Task Reference
+# style — Solution Task 参考
 
-## Read From SOLUTION.md
+## 读取 SOLUTION.md
 
-- `Goal`
-- `Scope`
-- `Type-Specific Analysis`
-- `Acceptance`
+- `目标`
+- `范围`
+- `类型专项分析`
+- `验收标准`
 
-## Task Types
+## 任务类型
 
-- Formatting.
-- Naming consistency.
-- Lint or style-only cleanup.
+- 格式化。
+- 命名一致性。
+- Lint 或纯风格清理。
 
-## Ordering
+## 顺序
 
-- Apply style changes before final diff review.
-- Do not include behavior changes.
+- 先应用风格变更，再做最终 diff 审查。
+- 不包含行为变更。
 
-## Template
+## 模板
 
 ```markdown
-## Task N: <style item>
+## Task N：<风格项>
 
 无业务逻辑，无需测试；通过格式、lint 或 diff 审查验证。
 
-- [ ] Update `<file_path>`
-- [ ] 验收标准：style-only change matches SOLUTION.md Acceptance and introduces no behavior change
-- [ ] 验证方式：<formatter, lint, or diff review>
+- [ ] 更新 `<file_path>`
+- [ ] 验收标准：纯风格变更符合 SOLUTION.md 验收标准，且不引入行为变化
+- [ ] 验证方式：<formatter、lint 或 diff 审查>
 ```

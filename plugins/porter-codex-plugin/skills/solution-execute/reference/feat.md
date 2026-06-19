@@ -1,38 +1,38 @@
-# feat — Solution Execute Reference
+# feat — Solution Execute 参考
 
-## Read From TASK.md
+## 读取 TASK.md
 
-- Behavior test tasks.
-- Minimal implementation tasks.
-- Refactor tasks.
-- Final verification tasks.
-- Structure validation tasks for Markdown/JSON-only features.
+- 行为测试任务。
+- 最小实现任务。
+- 重构任务。
+- 最终验证任务。
+- 仅 Markdown/JSON feature 的结构验证任务。
 
-## Execution Order
+## 执行顺序
 
-For executable behavior changes, keep the existing execute prototype rhythm:
+对可执行行为变更，保持现有执行原型节奏：
 
-1. **Red** — write or run the behavior test and confirm it fails for the missing behavior.
-2. **Green** — make the smallest implementation change that passes the behavior test.
-3. **Refactor** — clean up only after tests are green, then verify tests still pass.
-4. **Update `TASK.md`** — mark the task complete only after verification evidence is available.
+1. **Red** — 编写或运行行为测试，并确认它因目标行为缺失而失败。
+2. **Green** — 做最小实现变更，让行为测试通过。
+3. **Refactor** — 只在测试绿色后清理结构，并再次确认测试通过。
+4. **更新 `TASK.md`** — 只有验证证据可用后，才能标记任务完成。
 
-For documentation or configuration-only features, execute the file changes and validate structure instead of forcing behavior tests.
+对仅文档或配置的 feature，执行文件变更并验证结构，不强制行为测试。
 
-## Verification
+## 验证
 
-- Behavior tests must include Case / Given / When / Then / Assert or Verify when the task asks for them.
-- Red verification records the expected failing test.
-- Green verification records the passing test or observable output.
-- Refactor verification records that target and related tests still pass.
-- Markdown/JSON-only verification can use structure review, `quick_validate.py`, markdown fence checks, JSON validation, or diff review.
+- 当任务要求时，行为测试必须包含用例 / Given / When / Then / 断言或验证。
+- Red 验证记录预期失败的测试。
+- Green 验证记录通过的测试或可观察输出。
+- Refactor 验证记录目标测试和相关测试仍然通过。
+- 仅 Markdown/JSON 的验证可以使用结构审查、`quick_validate.py`、Markdown 围栏检查、JSON 校验或 diff 审查。
 
-## TASK.md Update
+## TASK.md 更新
 
-- Continue `[~]` tasks first.
-- Mark each completed task `[x]` after its `验证方式` passes or the limitation is recorded.
-- Leave failed or blocked tasks unchecked and record why execution stopped.
+- 优先继续 `[~]` 任务。
+- 每个任务只有在 `验证方式` 通过或限制已记录后，才能标记为 `[x]`。
+- 失败或阻塞任务保持未勾选，并记录停止原因。
 
-## Stop And Review
+## 停止并进入 review
 
-Stop and enter review if behavior cannot be tested, verification contradicts the accepted behavior, or the feature scope no longer matches `SOLUTION.md`.
+如果行为无法测试、验证结果与已接受行为矛盾，或 feature 范围不再匹配 `SOLUTION.md`，停止并进入 review。

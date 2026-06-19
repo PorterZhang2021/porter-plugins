@@ -1,30 +1,30 @@
-# refactor — Solution Execute Reference
+# refactor — Solution Execute 参考
 
-## Read From TASK.md
+## 读取 TASK.md
 
-- Baseline verification tasks.
-- Small refactor steps.
-- Regression verification tasks.
+- 基线验证任务。
+- 小步重构任务。
+- 回归验证任务。
 
-## Execution Order
+## 执行顺序
 
-1. Confirm baseline behavior before changing structure.
-2. Execute one small refactor step.
-3. Run or record the verification required by the task.
-4. Update `TASK.md`.
+1. 修改结构前确认基线行为。
+2. 执行一个小的重构步骤。
+3. 运行或记录任务要求的验证。
+4. 更新 `TASK.md`.
 
-If behavior coverage is missing and the refactor affects executable behavior, add or request coverage before continuing.
+如果缺少行为覆盖，且 refactor 影响可执行行为，继续前必须补覆盖或请求覆盖。
 
-## Verification
+## 验证
 
-- Existing tests, manual checks, command output, or diff review must show accepted behavior is unchanged.
-- Markdown/JSON-only refactors may use structure review.
+- 现有测试、手动检查、命令输出或 diff 审查必须能证明已接受行为不变。
+- 仅 Markdown/JSON 的重构可以使用结构审查。
 
-## TASK.md Update
+## TASK.md 更新
 
-- Mark a refactor step `[x]` only when its behavior-preservation verification passes or the limitation is recorded.
-- Keep unfinished refactor work `[~]` if follow-up is still inside the same task.
+- 只有行为保持验证通过或限制已记录后，才能把重构步骤标记为 `[x]`。
+- 如果后续仍在同一任务内，未完成重构保持 `[~]`。
 
-## Stop And Review
+## 停止并进入 review
 
-Stop and enter review if behavior changes, verification is unavailable for risky executable changes, or the refactor reveals a scope change.
+如果行为发生变化、风险较高的可执行变更无法验证，或重构揭示范围变化，停止并进入 review。
