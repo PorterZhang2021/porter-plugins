@@ -1,232 +1,249 @@
-# Task: Define Solution Review
+# 任务：定义 Timeline Slice 记录模型
 
-## Timeline Context
+## Timeline 上下文
 
-- Solution: `.codex/timeline/feat/refactor-feature-development/SOLUTION.md`
-- Branch: `feat/refactor-feature-development`
-- Type: `feat`
-- Timeline path: `.codex/timeline/feat/refactor-feature-development/`
-- Work slice: 004
-- Next stage: `$porter-codex-plugin:solution-execute`
+- 方案：`.codex/timeline/feat/refactor-feature-development/SOLUTION.md`
+- 分支：`feat/refactor-feature-development`
+- 类型：`feat`
+- 当前旧 timeline 路径：`.codex/timeline/feat/refactor-feature-development/`
+- 工作切片：`005`
+- 下一阶段：`$porter-codex-plugin:solution-review`
 
-## Status Legend
+## 状态说明
 
-- `[ ]` pending
-- `[~]` in progress
-- `[x]` complete
+- `[ ]` 待执行
+- `[~]` 执行中
+- `[x]` 已完成
 
-## Execution Rule
+## 执行规则
 
-- Execute tasks in order unless a task explicitly says it can run independently.
-- Do not start implementation tasks before their prerequisite tests, reproduction steps, measurements, or validation setup are ready.
-- Mark each task complete only after its verification step passes or the verification limitation is recorded.
-- Every task must include `验收标准` and `验证方式`; do not mark a task complete without observable evidence.
+- 按任务顺序执行，除非任务明确说明可以独立执行。
+- 本切片无业务逻辑，无需测试框架；通过结构审查、JSON 校验、Markdown 围栏检查和路径规则审查验证。
+- 每个任务完成后，必须有对应的验收标准和验证方式。
+- 不迁移历史 timeline 文件，不删除旧路径文件。
+- 允许同步更新 MVP overview 中与本路径模型和下一步 slice 相关的候选项。
 
-## Task 1: Create `solution-review` Skill Entry
-
-无业务逻辑，无需测试；通过结构审查验证。
-
-- 验收标准：`solution-review` skill 入口、frontmatter、阶段边界、调用方式和前置条件完整。
-- 验证方式：运行 skill frontmatter 校验，并人工审查 `SKILL.md` 的入口和边界说明。
-
-- [x] 创建 `plugins/porter-codex-plugin/skills/solution-review/SKILL.md`
-- [x] 添加完整 frontmatter：
-  - `name: solution-review`
-  - `description` 说明读取当前 timeline 并产出 `REVIEW.md`
-  - 如需工具权限，覆盖读取、写入、查找和 diff 检查所需能力
-- [x] 写明唯一 invocation：
-  - `$porter-codex-plugin:solution-review`
-- [x] 写明前置条件：
-  - 当前不在 `main` / `master`
-  - 当前分支符合 `<branch-type>/<branch-name>`
-  - `AGENTS.md` 存在
-  - `.codex/constitution.md` 存在
-  - `.codex/timeline/<branch-type>/<branch-name>/SOLUTION.md` 存在
-  - `.codex/timeline/<branch-type>/<branch-name>/TASK.md` 存在
-  - `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json` 存在
-- [x] 写明阶段边界：
-  - 只执行审查
-  - 只写入或更新 `REVIEW.md`
-  - 只写入或更新 `WORKFLOW_STATE.json`
-  - 不修改实现文件
-  - 不更新 `TASK.md`
-  - 不更新 `SOLUTION.md`
-  - 不执行修复
-  - 不 commit / merge / push / create PR
-
-## Task 2: Define Prototype Mapping From Existing `review`
+## Task 1: 定义 Timeline Container 结构
 
 无业务逻辑，无需测试；通过结构审查验证。
 
-- 验收标准：`solution-review` 明确以现有 `review` / `review-branch` 为原型，但移除旧 `plan/` 输入和对话-only 输出模式。
-- 验证方式：审查 `SKILL.md` 的 prototype mapping 和旧路径禁止规则，并用搜索确认未保留旧 `plan/` 读取假设。
+- 验收标准：`SOLUTION.md` 明确定义 `.codex/timeline/<timeline-name>/` 作为新的 timeline container 根路径。
+- 验证方式：审查 `SOLUTION.md` 的路径模型，并确认包含 `current.json`、`solutions/`、`tasks/`、`reviews/`、`states/`。
 
-- [x] 在 `solution-review/SKILL.md` 中写明参考原型：
-  - `plugins/porter-codex-plugin/skills/review/SKILL.md`
-  - `plugins/porter-codex-plugin/skills/review-branch/SKILL.md`
-- [x] 写明路径映射：
-  - 旧 `plan/<type>/<branch-name>/PLAN.md`
-  - 新 `.codex/timeline/<branch-type>/<branch-name>/SOLUTION.md`
-  - 旧 `plan/<type>/<branch-name>/TASK.md`
-  - 新 `.codex/timeline/<branch-type>/<branch-name>/TASK.md`
-  - 新增 `.codex/timeline/<branch-type>/<branch-name>/REVIEW.md`
-- [x] 写明不读取：
-  - `plan/<type>/<branch-name>/PLAN.md`
-  - `plan/<type>/<branch-name>/ANALYSIS.md`
-  - 旧 `plan/` workflow state
-- [x] 写明与旧 review 的关键差异：
-  - 旧 review 可选且主要对话输出
-  - `solution-review` 是 solution 最小闭环阶段
-  - `solution-review` 必须写入 `REVIEW.md`
-  - `solution-review` 必须更新 `WORKFLOW_STATE.json`
+- [x] 定义 timeline container 根路径：
+  - `.codex/timeline/<timeline-name>/`
+- [x] 定义可选 overview 文件：
+  - `<timeline-name>-overview.md`
+- [x] 定义固定子目录：
+  - `solutions/`
+  - `tasks/`
+  - `reviews/`
+  - `states/`
+- [x] 写明 `current.json` 位于 timeline container 根目录。
 
-## Task 3: Define State Gate And Inputs
+## Task 2: 定义 Slice Record 命名规则
 
 无业务逻辑，无需测试；通过结构审查验证。
 
-- 验收标准：`solution-review` 只能从 `awaiting_solution_review` 进入，并能收集审查所需上下文。
-- 验证方式：审查 `SKILL.md` 的 state gate、输入清单和不支持状态处理规则。
+- 验收标准：slice record id 使用 `<slice-id>-<type>-<slug>`，且 type 不包含 `mvp`。
+- 验证方式：审查 `SOLUTION.md` 的命名规则和 type 列表。
 
-- [x] 在 `solution-review/SKILL.md` 中定义只允许状态：
-  - `awaiting_solution_review`
-- [x] 写明如果状态不是 `awaiting_solution_review`，必须停止并提示 `WORKFLOW_STATE.json` 中记录的 `next_skill`
-- [x] 写明审查输入：
-  - `.codex/timeline/<branch-type>/<branch-name>/SOLUTION.md`
-  - `.codex/timeline/<branch-type>/<branch-name>/TASK.md`
-  - `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json`
-  - `git status --short`
-  - 当前 diff
-  - 必要时读取已有 `.codex/timeline/<branch-type>/<branch-name>/REVIEW.md`
-- [x] 写明 review brief 必须包含：
-  - 本次目标和验收标准
-  - 已完成任务
-  - 当前改动摘要
-  - 关键 diff
-  - 需要重点审查的风险点
+- [x] 定义 slice record id：
+  - `<slice-id>-<type>-<slug>`
+- [x] 写明 `<slice-id>` 使用三位递增编号。
+- [x] 写明 `<type>` 只能使用：
+  - `feat`
+  - `fix`
+  - `refactor`
+  - `perf`
+  - `test`
+  - `docs`
+  - `build`
+  - `ci`
+  - `chore`
+  - `style`
+- [x] 写明 `<slug>` 使用 kebab-case。
+- [x] 写明 `mvp` 不是 slice type。
 
-## Task 4: Define Two-Layer Review Mechanism
-
-无业务逻辑，无需测试；通过结构审查验证。
-
-- 验收标准：`solution-review` 继承旧 review 的双层审查机制，并区分首次 review 与回修 review。
-- 验证方式：审查 `SKILL.md` 的 Review Mechanism 规则和 `REVIEW.md` notes 记录要求。
-
-- [x] 写明当前 Codex 负责：
-  - 整理 review brief
-  - 裁决业务语义
-  - 裁决 solution workflow 阶段边界
-  - 检查 `SOLUTION.md` / `TASK.md` 一致性
-  - 检查 AGENTS.md / constitution 规则
-  - 决定最终状态流
-- [x] 写明首次正常 review 默认使用双层审查
-- [x] 写明如果环境支持 `code-reviewer` 子代理或等价新上下文审查能力，则委托子代理审查 review brief 和 diff
-- [x] 写明子代理只做通用工程审查，不裁决业务意图、配置取舍或 workflow 阶段边界
-- [x] 写明当前 Codex 合并子代理 findings，并保留有文件事实或 diff 支撑的问题
-- [x] 写明环境不支持子代理时降级为当前 Codex 审查，并在 `REVIEW.md` Notes 记录原因
-- [x] 写明回修 review 先复查上一轮 `REVIEW.md` findings 是否解决
-- [x] 写明回修 diff 较大、涉及可执行行为、用户显式要求或风险较高时，再次使用子代理
-- [x] 写明回修 review 跳过子代理时，必须在 `REVIEW.md` Notes 记录原因
-
-## Task 5: Define `REVIEW.md` Structure
+## Task 3: 定义 Slice 文件映射
 
 无业务逻辑，无需测试；通过结构审查验证。
 
-- 验收标准：`REVIEW.md` 结构能稳定记录上下文、结论、检查项、findings、open questions、notes 和 next step。
-- 验证方式：审查 `SKILL.md` 的 `REVIEW.md` skeleton，并确认包含必要字段。
+- 验收标准：同一 slice 的方案、任务、审查和状态文件都能由同一个 record id 推导。
+- 验证方式：审查 `SOLUTION.md` 中四类文件路径是否完整且一致。
 
-- [x] 在 `solution-review/SKILL.md` 中定义 `REVIEW.md` 结构：
-  - `# Review: <title>`
-  - `Timeline Context`
-  - `Result`
-  - `Checks`
-  - `Findings`
-  - `Open Questions`
-  - `Notes`
-  - `Next Step`
-- [x] 写明 `Result` 只能是：
-  - `pass`
-  - `needs-fix`
-  - `needs-task-update`
-  - `needs-solution-update`
-- [x] 写明 findings 必须按 P0 / P1 / P2 / P3 排序
-- [x] 写明没有阻断问题时必须明确写“无阻断问题”
-- [x] 写明范围重新确认问题归入 `needs-solution-update`，不得新增额外状态
+- [x] 定义方案文件路径：
+  - `.codex/timeline/<timeline-name>/solutions/<slice-id>-<type>-<slug>.md`
+- [x] 定义任务文件路径：
+  - `.codex/timeline/<timeline-name>/tasks/<slice-id>-<type>-<slug>.md`
+- [x] 定义审查文件路径：
+  - `.codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.md`
+- [x] 定义状态文件路径：
+  - `.codex/timeline/<timeline-name>/states/<slice-id>-<type>-<slug>.json`
+- [x] 写明后续 slice 追加新文件，不覆盖旧 slice 文件。
 
-## Task 6: Define Review Conclusions And State Outputs
-
-无业务逻辑，无需测试；通过 JSON 校验验证。
-
-- 验收标准：每个 review 结论都有明确 next state，且 JSON 示例可解析。
-- 验证方式：抽取或复制 `SKILL.md` 中 JSON 示例，用 `python -m json.tool` 校验。
-
-- [x] 写明 `pass` 结论：
-  - `state: awaiting_commit`
-  - `current_skill: $porter-codex-plugin:solution-review`
-  - `next_skill: $porter-codex-plugin:commit`
-- [x] 写明 `needs-fix` 结论：
-  - `state: awaiting_solution_execute_from_review`
-  - `current_skill: $porter-codex-plugin:solution-review`
-  - `next_skill: $porter-codex-plugin:solution-execute`
-- [x] 写明 `needs-task-update` 结论：
-  - `state: awaiting_solution_execute_from_review`
-  - `current_skill: $porter-codex-plugin:solution-review`
-  - `next_skill: $porter-codex-plugin:solution-execute`
-- [x] 写明 `needs-solution-update` 结论：
-  - `state: awaiting_solution_execute_from_review`
-  - `current_skill: $porter-codex-plugin:solution-review`
-  - `next_skill: $porter-codex-plugin:solution-execute`
-- [x] 所有输出 state 的 `allowed_outputs` 只包含：
-  - `.codex/timeline/<branch-type>/<branch-name>/REVIEW.md`
-  - `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json`
-- [x] 写明 `solution-review` 不直接写 `TASK.md` / `SOLUTION.md`
-
-## Task 7: Define Review Checklist
+## Task 4: 定义小 Feature 与 MVP 示例
 
 无业务逻辑，无需测试；通过结构审查验证。
 
-- 验收标准：review 清单覆盖 solution 目标、task 完成状态、验证证据、diff 范围、路径边界、frontmatter、JSON、Markdown 围栏和 workflow state。
-- 验证方式：审查 `SKILL.md` 的 checklist 字段。
+- 验收标准：小 feature 与 MVP timeline 使用同一套结构，MVP 只通过 overview 表达。
+- 验证方式：审查 `SOLUTION.md` 的小 feature 示例和 MVP timeline 示例。
 
-- [x] 检查 `SOLUTION.md` 的目标、范围和验收是否仍然成立
-- [x] 检查 `TASK.md` 是否全部完成，或未完成项是否合理记录
-- [x] 检查 `TASK.md` 中每个完成任务是否有验证证据或限制说明
-- [x] 检查当前 diff 是否只包含本 slice 允许范围
-- [x] 检查新增或修改文件是否符合 Codex 插件路径边界
-- [x] 检查是否误改旧 `plan-*`、`execute-*`、`review-*` 或 Claude 侧配置
-- [x] 检查 Markdown frontmatter 是否有效
-- [x] 检查 JSON 示例或状态文件是否可解析
-- [x] 检查 Markdown 代码围栏是否平衡
-- [x] 检查当前 workflow state 是否能正确进入下一阶段
+- [x] 写明小 feature 示例：
+  - `.codex/timeline/fix-review-untracked-files/`
+  - `001-fix-review-untracked-files`
+- [x] 写明小 feature 后续变大时可新增 slice。
+- [x] 写明 MVP timeline 示例：
+  - `.codex/timeline/workflow-architecture-refactor/`
+  - `workflow-architecture-refactor-overview.md`
+- [x] 写明 MVP 内部继续拆 `feat`、`fix`、`perf`、`docs` 等 slice。
+- [x] 写明不使用 `mvp` 作为 slice type。
 
-## Task 8: Validate Structure
+## Task 5: 定义 `current.json` 职责
+
+无业务逻辑，无需测试；通过 JSON 示例和结构审查验证。
+
+- 验收标准：`current.json` 只作为 active slice 指针，不承载完整 workflow state。
+- 验证方式：审查 `current.json` JSON 示例，并用 JSON 解析校验示例。
+
+- [x] 定义 `current.json` 字段：
+  - `timeline`
+  - `active_slice`
+  - `solution`
+  - `task`
+  - `review`
+  - `state`
+- [x] 写明 `solution` 创建或选择 active slice 时写入 `current.json`。
+- [x] 写明 `solution-task`、`solution-execute`、`solution-review` 优先从 `current.json` 解析 active slice 文件。
+- [x] 写明 `current.json` 不记录完整 workflow state。
+- [x] 写明本 slice 不实现切换 active slice 的命令。
+
+## Task 6: 定义 `states/*.json` 职责
+
+无业务逻辑，无需测试；通过 JSON 示例和结构审查验证。
+
+- 验收标准：`states/*.json` 承接新 slice 的 workflow state，并明确允许输出范围。
+- 验证方式：审查 `states/*.json` JSON 示例，并用 JSON 解析校验示例。
+
+- [x] 定义 state 文件路径：
+  - `.codex/timeline/<timeline-name>/states/<slice-id>-<type>-<slug>.json`
+- [x] 定义必要字段：
+  - `state`
+  - `current_skill`
+  - `next_skill`
+  - `timeline`
+  - `active_slice`
+  - `solution`
+  - `task`
+  - `review`
+  - `allowed_outputs`
+- [x] 写明 `timeline` 字段含义变为 timeline container 路径。
+- [x] 写明 `states/*.json` 替代新 slice 中固定的 `WORKFLOW_STATE.json`。
+
+## Task 7: 定义阶段写入边界
 
 无业务逻辑，无需测试；通过结构审查验证。
 
-- 验收标准：新增 skill、路径、Markdown 围栏、JSON 示例和状态规则全部通过轻量验证。
-- 验证方式：运行 `quick_validate.py`、JSON 校验、Markdown 围栏检查和路径搜索。
+- 验收标准：`solution`、`solution-task`、`solution-execute`、`solution-review` 的可写文件边界清晰，且 review 不直接修复。
+- 验证方式：审查 `SOLUTION.md` 的阶段写入边界。
 
-- [x] 运行 `python /Users/porterzhang/.codex/skills/.system/skill-creator/scripts/quick_validate.py plugins/porter-codex-plugin/skills/solution-review`
-- [x] 确认 `plugins/porter-codex-plugin/skills/solution-review/SKILL.md` frontmatter 完整
-- [x] 确认新增路径使用 kebab-case
-- [x] 确认所有 timeline 输出路径指向 `.codex/timeline/<branch-type>/<branch-name>/`
-- [x] 确认没有修改旧 `review` / `review-branch`
-- [x] 确认没有实现 `delivery-*`
-- [x] 确认没有新增额外状态流
-- [x] 确认没有读取旧 `plan/<type>/<branch-name>/PLAN.md` / `ANALYSIS.md` / workflow state 假设
-- [x] 确认 Markdown 代码围栏平衡
-- [x] 确认 JSON 示例能通过 `python -m json.tool`
-- [x] 回修 `REVIEW.md` 中记录的 untracked 文件读取、旧 `REVIEW.md` context guard、非阻断 findings 记录规则
+- [x] 定义 `solution` 只能写：
+  - `solutions/<slice>.md`
+  - `states/<slice>.json`
+  - `current.json`
+- [x] 定义 `solution-task` 只能写：
+  - `tasks/<slice>.md`
+  - `states/<slice>.json`
+  - `current.json`
+- [x] 定义 `solution-execute` 首次执行可写：
+  - `tasks/<slice>.md`
+  - `states/<slice>.json`
+  - task 需要的实现文件
+- [x] 定义 `solution-execute` 回修执行可写：
+  - `solutions/<slice>.md`
+  - `tasks/<slice>.md`
+  - `states/<slice>.json`
+  - review 回修需要的实现文件
+- [x] 定义 `solution-review` 只能写：
+  - `reviews/<slice>.md`
+  - `states/<slice>.json`
 
-## Completion Criteria
+## Task 8: 定义旧路径在途收尾规则
 
-- [x] `solution-review` skill 入口定义完成
-- [x] 旧 `review` 原型映射定义完成
-- [x] state gate 和 review 输入定义完成
-- [x] 双层审查机制定义完成
-- [x] 首次 review 与回修 review 规则定义完成
-- [x] `REVIEW.md` 结构定义完成
-- [x] review 结论定义完成
-- [x] `pass` 状态输出定义完成
-- [x] `needs-fix` / `needs-task-update` / `needs-solution-update` 回修状态输出定义完成
-- [x] review checklist 定义完成
-- [x] 结构审查完成
+无业务逻辑，无需测试；通过结构审查验证。
+
+- 验收标准：旧 `.codex/timeline/<branch-type>/<branch-name>/` 路径只允许当前在途 slice 收尾，不作为新 slice 创建路径。
+- 验证方式：审查 `SOLUTION.md` 的旧路径收尾规则和范围边界。
+
+- [x] 写明如果 `current.json` 存在，必须优先使用新路径。
+- [x] 写明如果 `current.json` 不存在但旧 `WORKFLOW_STATE.json` 存在，可以继续当前旧 slice 直到完成。
+- [x] 写明新 slice 创建必须使用新路径。
+- [x] 写明旧路径收尾完成后，后续新 slice 不再写入固定 `SOLUTION.md` / `TASK.md` / `REVIEW.md` / `WORKFLOW_STATE.json`。
+- [x] 写明本 slice 不自动迁移旧文件。
+- [x] 写明本 slice 不删除旧文件。
+- [x] 写明历史迁移需要后续单独拆迁移 slice。
+
+## Task 9: 更新可视化模型
+
+无业务逻辑，无需测试；通过结构审查验证。
+
+- 验收标准：可视化模型表达用户进入、路径选择、slice 创建、阶段读写和 review 回修流程。
+- 验证方式：审查 Mermaid 图和图后说明，确认不是单纯目录图。
+
+- [x] Mermaid 图包含 `current.json` 判断。
+- [x] Mermaid 图包含旧 `WORKFLOW_STATE.json` 在途收尾分支。
+- [x] Mermaid 图包含创建新 slice id。
+- [x] Mermaid 图包含 `solution`、`solution-task`、`solution-execute`、`solution-review` 的读写流。
+- [x] Mermaid 图包含 review `pass` 和回修分支。
+- [x] 图后说明解释 `current.json`、`states/<slice>.json` 和追加记录逻辑。
+
+## Task 10: 验证结构
+
+无业务逻辑，无需测试；通过结构审查验证。
+
+- 验收标准：`SOLUTION.md`、`TASK.md` 和 `WORKFLOW_STATE.json` 结构有效，且本 slice 没有执行迁移或实现改造。
+- 验证方式：运行 JSON 校验、Markdown 围栏检查、路径关键词搜索和 diff 审查。
+
+- [x] 校验 `.codex/timeline/feat/refactor-feature-development/WORKFLOW_STATE.json` 可解析。
+- [x] 校验 `SOLUTION.md` / `TASK.md` Markdown 代码围栏平衡。
+- [x] 校验 `SOLUTION.md` 中包含：
+  - `.codex/timeline/<timeline-name>/`
+  - `current.json`
+  - `solutions/`
+  - `tasks/`
+  - `reviews/`
+  - `states/`
+  - `<slice-id>-<type>-<slug>`
+- [x] 校验 `SOLUTION.md` 中明确 `mvp` 不是 slice type。
+- [x] 校验 diff 只包含本 slice 允许的 timeline 文档和 state 更新。
+- [x] 校验 diff 不包含插件 skill 实现改动。
+- [x] 确认没有创建新 timeline 目录。
+- [x] 确认没有修改 `plugins/porter-codex-plugin/skills/*`。
+
+## Task 11: 同步 MVP Overview 候选顺序
+
+无业务逻辑，无需测试；通过结构审查验证。
+
+- 验收标准：`MVP_OVERVIEW.md` 中 005 与当前路径模型一致，006 成为实际修正四个 solution skill 路由的下一步，原初始化类审计任务顺延。
+- 验证方式：审查 `MVP_OVERVIEW.md` 的过程文件模型、Work Overview 和 Slice Candidates。
+
+- [x] 将 MVP 过程文件模型改为 `.codex/timeline/<timeline-name>/`、`current.json`、`solutions/`、`tasks/`、`reviews/`、`states/`。
+- [x] 将 005 对齐为 timeline container 与 slice record 文件模型。
+- [x] 将 006 对齐为让 `solution`、`solution-task`、`solution-execute`、`solution-review` 使用 `current.json` / `states/*.json` 路由。
+- [x] 将原 `constitution` / `codex-md` 审计顺延到后续 slice。
+- [x] 移除 MVP overview 中把 `needs-mvp-upgrade` 作为本闭环 review 结论的表述。
+- [x] 确认 `mvp` 不作为 slice type。
+
+## 完成标准
+
+- [x] Timeline container 结构定义完成
+- [x] Slice record 命名规则定义完成
+- [x] Slice 文件映射定义完成
+- [x] 小 feature 与 MVP 示例定义完成
+- [x] `current.json` 职责定义完成
+- [x] `states/*.json` 职责定义完成
+- [x] 阶段写入边界定义完成
+- [x] 旧路径在途收尾规则定义完成
+- [x] 可视化模型更新完成
+- [x] 结构验证完成
+- [x] MVP overview 候选顺序同步完成
