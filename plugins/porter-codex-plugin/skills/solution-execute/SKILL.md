@@ -177,7 +177,7 @@ Then:
 4. If review reports implementation defects, update implementation/config/docs files and `TASK.md`.
 5. If review reports missing tasks, update `TASK.md` and execute the new or unfinished tasks.
 6. If review reports changed assumptions, acceptance, root cause, or bottleneck analysis, update `SOLUTION.md` and then sync `TASK.md`.
-7. If review reports `needs-mvp-upgrade`, stop and prompt the user to return to MVP discussion. Do not continue stale remediation.
+7. If review reports that user confirmation is required before remediation, stop and ask for that decision. Do not continue stale remediation.
 
 When remediation is complete, write the same `awaiting_solution_review` state used by first execution.
 
