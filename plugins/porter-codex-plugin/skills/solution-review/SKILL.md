@@ -1,6 +1,6 @@
 ---
 name: solution-review
-description: Review the current Codex timeline after solution-execute, write REVIEW.md, and update WORKFLOW_STATE.json for pass or solution remediation in the new solution workflow
+description: Review the active solution timeline slice after solution-execute, write the slice review file, and update explicit slice state for pass or remediation
 allowed-tools:
   - Bash
   - Read
@@ -12,26 +12,33 @@ allowed-tools:
 
 # Solution Review
 
-Review the current timeline after `$porter-codex-plugin:solution-execute` in the new solution workflow:
+Review the active slice after `$porter-codex-plugin:solution-execute`:
 
 ```text
 solution -> solution-task -> solution-execute -> solution-review
 ```
 
-This skill is based on the existing `$porter-codex-plugin:review` and `$porter-codex-plugin:review-branch` prototypes, but it writes a durable timeline review file and updates explicit workflow state.
+This skill writes a durable review file for the active slice and updates the active slice state.
 
 ## Phase Boundary
 
-- Review only the current solution workflow result.
-- Write or update `.codex/timeline/<branch-type>/<branch-name>/REVIEW.md`.
-- Write or update `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json`.
-- Do not modify implementation, documentation, or configuration files outside the review outputs.
-- Do not update `TASK.md`.
-- Do not update `SOLUTION.md`.
+- Review only the current active solution workflow result.
+- Write or update active slice review file.
+- Write or update active slice state file.
+- Do not modify implementation, documentation, or configuration files outside review outputs.
+- Do not update task file.
+- Do not update solution file.
 - Do not execute fixes.
 - Do not commit.
 - Do not merge, push, or create PR.
 - Stop after review and prompt the user to call the next explicit skill.
+
+New slice review outputs:
+
+```text
+.codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.md
+.codex/timeline/<timeline-name>/states/<slice-id>-<type>-<slug>.json
+```
 
 ## Invocation
 
@@ -41,61 +48,83 @@ $porter-codex-plugin:solution-review
 
 No command arguments are required.
 
+## Path Resolution
+
+`solution-review` does not create a new slice id.
+
+timeline name resolution:
+
+1. If the user explicitly confirmed a timeline name in the current conversation, use it.
+2. Otherwise use the current `<branch-name>` as the default timeline name.
+3. If the default `.codex/timeline/<timeline-name>/current.json` does not exist, scan `.codex/timeline/*/current.json`.
+4. Use the scanned timeline only when exactly one `current.json` points to a state that allows `$porter-codex-plugin:solution-review`.
+5. If there is no match or more than one match, stop and ask the user to name the timeline explicitly.
+
+Before review:
+
+1. If `.codex/timeline/<timeline-name>/current.json` exists, use it first.
+2. Read `current.json` and resolve active slice files:
+   - `solution`
+   - `task`
+   - `review`
+   - `state`
+3. Read active slice state from `states/<slice>.json`.
+4. If `current.json` does not exist but old `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json` exists, enter old-path in-flight completion mode:
+   - solution file maps to `.codex/timeline/<branch-type>/<branch-name>/SOLUTION.md`
+   - task file maps to `.codex/timeline/<branch-type>/<branch-name>/TASK.md`
+   - review file maps to `.codex/timeline/<branch-type>/<branch-name>/REVIEW.md`
+   - state file maps to `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json`
+   - continue only when the old state allows `$porter-codex-plugin:solution-review`
+5. New slice creation must use the new path and belongs only to `$porter-codex-plugin:solution`.
+
 ## Prerequisites
 
 1. Confirm `AGENTS.md` exists.
 2. Confirm `.codex/constitution.md` exists.
 3. Confirm the current branch is not `main` or `master`.
 4. Read the current branch name and confirm it matches `<branch-type>/<branch-name>`.
-5. Confirm the current timeline exists:
+5. Resolve active slice through `current.json`, or enter old-path in-flight completion when no `current.json` exists and old `WORKFLOW_STATE.json` exists.
 
-```text
-.codex/timeline/<branch-type>/<branch-name>/
+Required active slice files:
+
+- solution file
+- task file
+- state file
+
+Optional active slice file:
+
+- review file, if present and needed to verify remediation
+
+## current.json
+
+`current.json` is the active slice pointer, not workflow state.
+
+```json
+{
+  "timeline": ".codex/timeline/<timeline-name>",
+  "active_slice": "<slice-id>-<type>-<slug>",
+  "solution": ".codex/timeline/<timeline-name>/solutions/<slice-id>-<type>-<slug>.md",
+  "task": ".codex/timeline/<timeline-name>/tasks/<slice-id>-<type>-<slug>.md",
+  "review": ".codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.md",
+  "state": ".codex/timeline/<timeline-name>/states/<slice-id>-<type>-<slug>.json"
+}
 ```
-
-Required files:
-
-- `.codex/timeline/<branch-type>/<branch-name>/SOLUTION.md`
-- `.codex/timeline/<branch-type>/<branch-name>/TASK.md`
-- `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json`
-
-Optional file:
-
-- `.codex/timeline/<branch-type>/<branch-name>/REVIEW.md`
-
-## Prototype Mapping
-
-| Existing review prototype | `solution-review` |
-| --- | --- |
-| `plugins/porter-codex-plugin/skills/review/SKILL.md` | Primary submit-before-commit review pattern |
-| `plugins/porter-codex-plugin/skills/review-branch/SKILL.md` | Branch workflow review pattern |
-| `plan/<type>/<branch-name>/PLAN.md` | `.codex/timeline/<branch-type>/<branch-name>/SOLUTION.md` |
-| `plan/<type>/<branch-name>/TASK.md` | `.codex/timeline/<branch-type>/<branch-name>/TASK.md` |
-| Conversation-only review output | `.codex/timeline/<branch-type>/<branch-name>/REVIEW.md` |
-| Optional review before commit | Required solution workflow stage before commit |
-| `commit` / `commit-branch` prompt | Explicit workflow state transition |
-
-Do not read old workflow inputs:
-
-- Do not read `plan/<type>/<branch-name>/PLAN.md`.
-- Do not read `plan/<type>/<branch-name>/ANALYSIS.md`.
-- Do not read old `plan/` workflow state.
 
 ## State Gate
 
-Read `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json` before review.
+Read active slice state before review.
 
 Allowed state:
 
 - `awaiting_solution_review`
 
-If the state is missing or is not `awaiting_solution_review`, stop and prompt the user to explicitly call the `next_skill` recorded in `WORKFLOW_STATE.json`.
+If the state is missing or is not `awaiting_solution_review`, stop and prompt the user to explicitly call the `next_skill` recorded in the state file.
 
-Do not continue without `WORKFLOW_STATE.json`; this workflow requires explicit state.
+Do not continue without explicit state.
 
 ## Review Inputs
 
-Collect this context before writing `REVIEW.md`:
+Collect this context before writing the review file:
 
 ```bash
 git status --short
@@ -105,20 +134,26 @@ git ls-files --others --exclude-standard
 
 Read:
 
-- `.codex/timeline/<branch-type>/<branch-name>/SOLUTION.md`
-- `.codex/timeline/<branch-type>/<branch-name>/TASK.md`
-- `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json`
-- Existing `.codex/timeline/<branch-type>/<branch-name>/REVIEW.md`, if present and needed to verify remediation
-- In-scope untracked files reported by `git ls-files --others --exclude-standard`
+- active slice solution file
+- active slice task file
+- active slice state file
+- active slice review file, if present and needed to verify remediation
+- in-scope untracked files reported by `git ls-files --others --exclude-standard`
 
 Build a review brief that includes:
 
-- Current goal and acceptance criteria from `SOLUTION.md`.
-- Completed and incomplete tasks from `TASK.md`.
+- Current goal and acceptance criteria from the solution file.
+- Completed and incomplete tasks from the task file.
 - Current change summary from `git status --short`.
 - Key diff excerpts or file paths from `git diff`.
 - In-scope untracked file contents that are not represented in `git diff`.
 - Risk points that need focused review.
+
+Do not read old workflow inputs:
+
+- Do not read `plan/<type>/<branch-name>/PLAN.md`.
+- Do not read `plan/<type>/<branch-name>/ANALYSIS.md`.
+- Do not read old `plan/` workflow state.
 
 ## Review Mechanism
 
@@ -126,8 +161,8 @@ Use two-layer review. The current Codex owns workflow judgment and final result;
 
 Current Codex must review:
 
-- Business semantics and whether the result satisfies `SOLUTION.md`.
-- `SOLUTION.md` / `TASK.md` consistency.
+- Business semantics and whether the result satisfies the solution file.
+- Solution / task consistency.
 - Solution workflow phase boundaries.
 - AGENTS.md and constitution rules.
 - Codex plugin path boundaries.
@@ -155,26 +190,26 @@ The subagent must not decide:
 
 Current Codex must merge the results. Keep only findings supported by files, diff, or command output. Downgrade questions that need user judgment to `Open Questions`.
 
-If subagent review is unavailable, complete the review in the current Codex context and record the reason in `REVIEW.md` Notes. This is a valid fallback, not a review failure.
+If subagent review is unavailable, complete the review in the current Codex context and record the reason in the review file Notes. This is a valid fallback, not a review failure.
 
 For remediation review:
 
-1. Read the previous `REVIEW.md` only after confirming its Timeline Context matches the active branch, work slice, solution path, and task path.
-2. If an existing `REVIEW.md` belongs to an older slice or different context, treat it as stale and overwrite it as a first normal review.
+1. Read the previous active slice review file only after confirming its Timeline Context matches the active slice id, solution path, task path, review path, and state path.
+2. If an existing review file belongs to an older slice or different context, treat it as stale and overwrite it as a first normal review.
 3. Verify whether matching prior findings were resolved.
 4. Use a subagent again when the remediation diff is large, involves executable behavior, the user explicitly asks for it, or the general engineering risk is high.
-5. If skipping subagent review, record the reason in `REVIEW.md` Notes.
+5. If skipping subagent review, record the reason in the review file Notes.
 
 ## Review Checklist
 
 Check all of these before choosing a result:
 
-- `SOLUTION.md` goal, scope, and acceptance still hold.
-- `TASK.md` tasks are all complete, or any incomplete item has a clear recorded reason.
+- Solution goal, scope, and acceptance still hold.
+- Task items are all complete, or any incomplete item has a clear recorded reason.
 - Each completed task has validation evidence or a recorded limitation.
 - Current diff and in-scope untracked files only contain files allowed by this slice.
 - New or modified files stay under the Codex plugin path boundary when implementation/config files are changed.
-- No old `plan-*`, `execute-*`, `review-*`, or Claude-side configuration was changed unless explicitly required by `SOLUTION.md`.
+- No old `plan-*`, `execute-*`, `review-*`, or Claude-side configuration was changed unless explicitly required by the solution.
 - Markdown frontmatter is valid for modified skills.
 - JSON examples or state files are parseable.
 - Markdown code fences are balanced.
@@ -183,18 +218,20 @@ Check all of these before choosing a result:
 
 ## REVIEW.md Structure
 
-Write `.codex/timeline/<branch-type>/<branch-name>/REVIEW.md` using this structure:
+Write the active slice review file using this structure:
 
 ```markdown
 # Review: <title>
 
 ## Timeline Context
 
-- Solution: `.codex/timeline/<branch-type>/<branch-name>/SOLUTION.md`
-- Task: `.codex/timeline/<branch-type>/<branch-name>/TASK.md`
-- Branch: `<branch-type>/<branch-name>`
+- Solution: `.codex/timeline/<timeline-name>/solutions/<slice-id>-<type>-<slug>.md`
+- Task: `.codex/timeline/<timeline-name>/tasks/<slice-id>-<type>-<slug>.md`
+- Review: `.codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.md`
+- State: `.codex/timeline/<timeline-name>/states/<slice-id>-<type>-<slug>.json`
+- Timeline: `.codex/timeline/<timeline-name>`
+- Active slice: `<slice-id>-<type>-<slug>`
 - Type: `<selected-type>`
-- Work slice: `<slice>`
 
 ## Result
 
@@ -243,7 +280,7 @@ If review finds scope, assumption, acceptance, root-cause, or bottleneck issues 
 Use `pass` when:
 
 - Acceptance is satisfied.
-- TASK is complete or any remaining item is explicitly non-blocking.
+- Tasks are complete or any remaining item is explicitly non-blocking.
 - Validation evidence is present or limitations are recorded.
 - No `P0` or `P1` finding blocks commit.
 
@@ -255,37 +292,55 @@ Use `needs-solution-update` when the solution assumptions, scope, acceptance, ro
 
 ## State Outputs
 
-For `pass`, write:
+For `pass`, write active slice state:
 
 ```json
 {
   "state": "awaiting_commit",
   "current_skill": "$porter-codex-plugin:solution-review",
   "next_skill": "$porter-codex-plugin:commit",
-  "timeline": ".codex/timeline/<branch-type>/<branch-name>",
+  "timeline": ".codex/timeline/<timeline-name>",
+  "active_slice": "<slice-id>-<type>-<slug>",
+  "solution": ".codex/timeline/<timeline-name>/solutions/<slice-id>-<type>-<slug>.md",
+  "task": ".codex/timeline/<timeline-name>/tasks/<slice-id>-<type>-<slug>.md",
+  "review": ".codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.md",
   "allowed_outputs": [
-    ".codex/timeline/<branch-type>/<branch-name>/REVIEW.md",
-    ".codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json"
+    ".codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.md",
+    ".codex/timeline/<timeline-name>/states/<slice-id>-<type>-<slug>.json"
   ]
 }
 ```
 
-For `needs-fix`, `needs-task-update`, or `needs-solution-update`, write:
+For `needs-fix`, `needs-task-update`, or `needs-solution-update`, write active slice state:
 
 ```json
 {
   "state": "awaiting_solution_execute_from_review",
   "current_skill": "$porter-codex-plugin:solution-review",
   "next_skill": "$porter-codex-plugin:solution-execute",
-  "timeline": ".codex/timeline/<branch-type>/<branch-name>",
+  "timeline": ".codex/timeline/<timeline-name>",
+  "active_slice": "<slice-id>-<type>-<slug>",
+  "solution": ".codex/timeline/<timeline-name>/solutions/<slice-id>-<type>-<slug>.md",
+  "task": ".codex/timeline/<timeline-name>/tasks/<slice-id>-<type>-<slug>.md",
+  "review": ".codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.md",
   "allowed_outputs": [
-    ".codex/timeline/<branch-type>/<branch-name>/REVIEW.md",
-    ".codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json"
+    ".codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.md",
+    ".codex/timeline/<timeline-name>/states/<slice-id>-<type>-<slug>.json"
   ]
 }
 ```
 
-Do not write `TASK.md` or `SOLUTION.md` during review. Remediation belongs to `$porter-codex-plugin:solution-execute`.
+Do not write task file or solution file during review. Remediation belongs to `$porter-codex-plugin:solution-execute`.
+
+## 旧路径在途收尾
+
+规则：
+
+- 如果 `current.json` 存在，优先使用新路径。
+- 如果 `current.json` 不存在但旧 `WORKFLOW_STATE.json` 存在，只有旧 state 允许进入 `$porter-codex-plugin:solution-review` 时才继续旧路径收尾。
+- 新 slice 创建必须使用新路径。
+- 不自动迁移旧文件。
+- 不删除旧文件。
 
 ## Completion Prompt
 

@@ -1,6 +1,6 @@
 ---
 name: solution-execute
-description: Execute tasks from the current Codex timeline TASK.md, update workflow state, and support review-remediation execution in the new solution workflow
+description: Execute tasks from the active solution timeline slice, update slice state, and support review-remediation execution in the solution workflow
 allowed-tools:
   - Bash
   - Read
@@ -12,25 +12,35 @@ allowed-tools:
 
 # Solution Execute
 
-Execute `TASK.md` for the new solution workflow:
+Execute the active slice task file for the solution workflow:
 
 ```text
 solution -> solution-task -> solution-execute -> solution-review
 ```
 
-This skill is based on the existing `$porter-codex-plugin:execute` and `$porter-codex-plugin:execute-branch` prototypes, but it only reads and writes the new `.codex/timeline/<branch-type>/<branch-name>/` workflow files.
+This skill reads `current.json` to locate the active slice and updates that slice's task and state files.
 
 ## Phase Boundary
 
 - Execute the current allowed solution task work.
-- Update `.codex/timeline/<branch-type>/<branch-name>/TASK.md`.
-- Update `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json`.
-- In review-remediation mode only, update `.codex/timeline/<branch-type>/<branch-name>/SOLUTION.md` when `REVIEW.md` shows changed assumptions, acceptance, root cause, or bottleneck analysis.
+- Update active slice task file.
+- Update active slice state file.
+- In review-remediation mode only, update active slice solution file when the active slice review file shows changed assumptions, acceptance, root cause, or bottleneck analysis.
 - Do not execute review.
 - Do not commit.
 - Do not merge, push, or create PR.
 - Stop after execution and ask the user whether to supplement, adjust, or continue unfinished tasks.
 - If there is no further adjustment, prompt the user to explicitly call `$porter-codex-plugin:solution-review`.
+
+New slice paths:
+
+```text
+.codex/timeline/<timeline-name>/current.json
+.codex/timeline/<timeline-name>/tasks/<slice-id>-<type>-<slug>.md
+.codex/timeline/<timeline-name>/solutions/<slice-id>-<type>-<slug>.md
+.codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.md
+.codex/timeline/<timeline-name>/states/<slice-id>-<type>-<slug>.json
+```
 
 ## Invocation
 
@@ -40,41 +50,52 @@ $porter-codex-plugin:solution-execute
 
 No command arguments are required.
 
+## Path Resolution
+
+`solution-execute` does not create a new slice id.
+
+timeline name resolution:
+
+1. If the user explicitly confirmed a timeline name in the current conversation, use it.
+2. Otherwise use the current `<branch-name>` as the default timeline name.
+3. If the default `.codex/timeline/<timeline-name>/current.json` does not exist, scan `.codex/timeline/*/current.json`.
+4. Use the scanned timeline only when exactly one `current.json` points to a state that allows `$porter-codex-plugin:solution-execute`.
+5. If there is no match or more than one match, stop and ask the user to name the timeline explicitly.
+
+Before execution:
+
+1. If `.codex/timeline/<timeline-name>/current.json` exists, use it first.
+2. Read `current.json` and resolve active slice files:
+   - `solution`
+   - `task`
+   - `review`
+   - `state`
+3. Read the `state` path resolved from `current.json`, normally `states/<slice>.json`.
+4. If `current.json` does not exist but old `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json` exists, enter old-path in-flight completion mode:
+   - solution file maps to `.codex/timeline/<branch-type>/<branch-name>/SOLUTION.md`
+   - task file maps to `.codex/timeline/<branch-type>/<branch-name>/TASK.md`
+   - review file maps to `.codex/timeline/<branch-type>/<branch-name>/REVIEW.md`
+   - state file maps to `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json`
+   - continue only when the old state allows `$porter-codex-plugin:solution-execute`
+5. New slice creation must use the new path and belongs only to `$porter-codex-plugin:solution`.
+
 ## Prerequisites
 
 1. Confirm `AGENTS.md` exists.
 2. Confirm `.codex/constitution.md` exists.
 3. Confirm the current branch is not `main` or `master`.
 4. Read the current branch name and confirm it matches `<branch-type>/<branch-name>`.
-5. Confirm the current timeline exists:
+5. Resolve active slice through `current.json`, or enter old-path in-flight completion when no `current.json` exists and old `WORKFLOW_STATE.json` exists.
 
-```text
-.codex/timeline/<branch-type>/<branch-name>/
-```
+Required active slice files:
 
-Required files:
-
-- `.codex/timeline/<branch-type>/<branch-name>/SOLUTION.md`
-- `.codex/timeline/<branch-type>/<branch-name>/TASK.md`
-- `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json`
+- solution file
+- task file
+- state file
 
 Review-remediation mode also requires:
 
-- `.codex/timeline/<branch-type>/<branch-name>/REVIEW.md`
-
-## Prototype Mapping
-
-| Existing execute prototype | `solution-execute` |
-| --- | --- |
-| `plan/<type>/<branch-name>/TASK.md` | `.codex/timeline/<branch-type>/<branch-name>/TASK.md` |
-| `plan/<type>/<branch-name>/PLAN.md` fallback | No fallback; missing `TASK.md` stops and prompts `$porter-codex-plugin:solution-task` |
-| `plan/<type>/<branch-name>/WORKFLOW_STATE.json` | `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json` |
-| `awaiting_execute` | `awaiting_solution_execute` |
-| `executing` | `executing_solution` |
-| `awaiting_review_or_commit` | `awaiting_solution_review` |
-| `review` / `review-branch` | `solution-review` |
-| `commit` / `commit-branch` alternate | No alternate; review comes before commit |
-| `execute/reference/<type>.md` | `solution-execute/reference/<type>.md` |
+- review file
 
 Do not read old workflow inputs:
 
@@ -82,9 +103,27 @@ Do not read old workflow inputs:
 - Do not read `plan/<type>/<branch-name>/ANALYSIS.md`.
 - Do not read old `plan/` workflow state.
 
+## current.json
+
+`current.json` is the active slice pointer, not workflow state.
+
+```json
+{
+  "timeline": ".codex/timeline/<timeline-name>",
+  "active_slice": "<slice-id>-<type>-<slug>",
+  "solution": ".codex/timeline/<timeline-name>/solutions/<slice-id>-<type>-<slug>.md",
+  "task": ".codex/timeline/<timeline-name>/tasks/<slice-id>-<type>-<slug>.md",
+  "review": ".codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.md",
+  "state": ".codex/timeline/<timeline-name>/states/<slice-id>-<type>-<slug>.json"
+}
+```
+
 ## State Gate
 
-Read `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json` before execution.
+Read the resolved state file before execution.
+
+- New path mode reads the `state` file resolved from `current.json`, normally `states/<slice>.json`.
+- Old-path in-flight completion mode reads `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json`.
 
 Allowed states:
 
@@ -93,9 +132,9 @@ Allowed states:
 - `awaiting_solution_execute_from_review`
 - `executing_solution_remediation`
 
-If the state is missing or not in this list, stop and prompt the user to explicitly call the `next_skill` recorded in `WORKFLOW_STATE.json`.
+If the state is missing or not in this list, stop and prompt the user to explicitly call the `next_skill` recorded in the state file.
 
-Do not continue without `WORKFLOW_STATE.json`; unlike the old `execute` skill, this workflow requires explicit state.
+Do not continue without explicit state.
 
 ## First Execution Mode
 
@@ -104,31 +143,35 @@ Use this mode for:
 - `awaiting_solution_execute`
 - `executing_solution`
 
-Before modifying implementation, documentation, or configuration files, write:
+Before modifying implementation, documentation, configuration, or task files, write:
 
 ```json
 {
   "state": "executing_solution",
   "current_skill": "$porter-codex-plugin:solution-execute",
   "next_skill": "$porter-codex-plugin:solution-execute",
-  "timeline": ".codex/timeline/<branch-type>/<branch-name>",
+  "timeline": ".codex/timeline/<timeline-name>",
+  "active_slice": "<slice-id>-<type>-<slug>",
+  "solution": ".codex/timeline/<timeline-name>/solutions/<slice-id>-<type>-<slug>.md",
+  "task": ".codex/timeline/<timeline-name>/tasks/<slice-id>-<type>-<slug>.md",
+  "review": ".codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.md",
   "allowed_outputs": [
-    ".codex/timeline/<branch-type>/<branch-name>/TASK.md",
-    ".codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json",
-    "<files required by unchecked TASK.md items>"
+    ".codex/timeline/<timeline-name>/tasks/<slice-id>-<type>-<slug>.md",
+    ".codex/timeline/<timeline-name>/states/<slice-id>-<type>-<slug>.json",
+    "<files required by unchecked task items>"
   ]
 }
 ```
 
 Then:
 
-1. Read `SOLUTION.md`.
-2. Read `TASK.md`.
-3. Read selected type from `SOLUTION.md` `Type Decision`.
+1. Read active slice solution file.
+2. Read active slice task file.
+3. Read selected type from solution file Type Decision.
 4. Load `solution-execute/reference/<type>.md`.
 5. Continue the first `[~]` task if one exists; otherwise execute the first `[ ]` task.
 6. Mark a task `[x]` only after its `验证方式` passes or the verification limitation is recorded.
-7. Update `TASK.md` after each completed task or substep.
+7. Update the active slice task file after each completed task or substep.
 
 When all tasks are complete, write:
 
@@ -137,10 +180,14 @@ When all tasks are complete, write:
   "state": "awaiting_solution_review",
   "current_skill": "$porter-codex-plugin:solution-execute",
   "next_skill": "$porter-codex-plugin:solution-review",
-  "timeline": ".codex/timeline/<branch-type>/<branch-name>",
+  "timeline": ".codex/timeline/<timeline-name>",
+  "active_slice": "<slice-id>-<type>-<slug>",
+  "solution": ".codex/timeline/<timeline-name>/solutions/<slice-id>-<type>-<slug>.md",
+  "task": ".codex/timeline/<timeline-name>/tasks/<slice-id>-<type>-<slug>.md",
+  "review": ".codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.md",
   "allowed_outputs": [
-    ".codex/timeline/<branch-type>/<branch-name>/REVIEW.md",
-    ".codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json"
+    ".codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.md",
+    ".codex/timeline/<timeline-name>/states/<slice-id>-<type>-<slug>.json"
   ]
 }
 ```
@@ -152,38 +199,42 @@ Use this mode for:
 - `awaiting_solution_execute_from_review`
 - `executing_solution_remediation`
 
-Before modifying implementation, documentation, configuration, `TASK.md`, or `SOLUTION.md`, write:
+Before modifying implementation, documentation, configuration, task file, or solution file, write:
 
 ```json
 {
   "state": "executing_solution_remediation",
   "current_skill": "$porter-codex-plugin:solution-execute",
   "next_skill": "$porter-codex-plugin:solution-execute",
-  "timeline": ".codex/timeline/<branch-type>/<branch-name>",
+  "timeline": ".codex/timeline/<timeline-name>",
+  "active_slice": "<slice-id>-<type>-<slug>",
+  "solution": ".codex/timeline/<timeline-name>/solutions/<slice-id>-<type>-<slug>.md",
+  "task": ".codex/timeline/<timeline-name>/tasks/<slice-id>-<type>-<slug>.md",
+  "review": ".codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.md",
   "allowed_outputs": [
-    ".codex/timeline/<branch-type>/<branch-name>/TASK.md",
-    ".codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json",
-    ".codex/timeline/<branch-type>/<branch-name>/SOLUTION.md",
-    "<files required by REVIEW.md remediation>"
+    ".codex/timeline/<timeline-name>/tasks/<slice-id>-<type>-<slug>.md",
+    ".codex/timeline/<timeline-name>/solutions/<slice-id>-<type>-<slug>.md",
+    ".codex/timeline/<timeline-name>/states/<slice-id>-<type>-<slug>.json",
+    "<files required by active slice review remediation>"
   ]
 }
 ```
 
 Then:
 
-1. Read `REVIEW.md`.
-2. Read `TASK.md`.
-3. Read `SOLUTION.md` when the review conclusion affects solution assumptions, acceptance, root cause, or bottleneck analysis.
-4. If review reports implementation defects, update implementation/config/docs files and `TASK.md`.
-5. If review reports missing tasks, update `TASK.md` and execute the new or unfinished tasks.
-6. If review reports changed assumptions, acceptance, root cause, or bottleneck analysis, update `SOLUTION.md` and then sync `TASK.md`.
+1. Read active slice review file.
+2. Read active slice task file.
+3. Read active slice solution file when the review conclusion affects solution assumptions, acceptance, root cause, or bottleneck analysis.
+4. If review reports implementation defects, update implementation/config/docs files and task file.
+5. If review reports missing tasks, update task file and execute the new or unfinished tasks.
+6. If review reports changed assumptions, acceptance, root cause, or bottleneck analysis, update solution file and then sync task file.
 7. If review reports that user confirmation is required before remediation, stop and ask for that decision. Do not continue stale remediation.
 
 When remediation is complete, write the same `awaiting_solution_review` state used by first execution.
 
 ## Type Routing
 
-Read selected type from `SOLUTION.md` `Type Decision`, then load:
+Read selected type from solution file Type Decision, then load:
 
 | Type | Reference |
 | --- | --- |
@@ -200,15 +251,27 @@ Read selected type from `SOLUTION.md` `Type Decision`, then load:
 
 If selected type is missing or unsupported, stop and prompt the user to return to `$porter-codex-plugin:solution`.
 
+`mvp` is not a slice type.
+
 ## Execution Rules
 
-- Follow `TASK.md` order unless a task explicitly says it can run independently.
+- Follow task file order unless a task explicitly says it can run independently.
 - Continue `[~]` before starting another `[ ]` task.
 - Do not mark a task complete without observable evidence.
 - If verification fails, leave the task unchecked or `[~]`, record the limitation or failure, and stop for user confirmation unless the next step is obvious and still inside the task.
 - For documentation or configuration-only tasks, structure review, diff review, markdown fence checks, JSON validation, or skill frontmatter validation can be enough evidence.
 - For code or executable configuration changes, run the relevant tests, commands, lint, build, dry-run, benchmark, or manual verification described in the task.
 - Do not skip review; completion always transitions to `$porter-codex-plugin:solution-review`.
+
+## 旧路径在途收尾
+
+规则：
+
+- 如果 `current.json` 存在，优先使用新路径。
+- 如果 `current.json` 不存在但旧 `WORKFLOW_STATE.json` 存在，只有旧 state 允许进入 `$porter-codex-plugin:solution-execute` 时才继续旧路径收尾。
+- 新 slice 创建必须使用新路径。
+- 不自动迁移旧文件。
+- 不删除旧文件。
 
 ## Completion Prompt
 

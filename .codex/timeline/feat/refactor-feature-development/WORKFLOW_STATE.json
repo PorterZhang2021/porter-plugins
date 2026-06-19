@@ -1,7 +1,7 @@
 {
-  "state": "awaiting_commit",
-  "current_skill": "$porter-codex-plugin:solution-review",
-  "next_skill": "$porter-codex-plugin:commit",
+  "state": "awaiting_solution_review",
+  "current_skill": "$porter-codex-plugin:solution-execute",
+  "next_skill": "$porter-codex-plugin:solution-review",
   "timeline": ".codex/timeline/feat/refactor-feature-development",
   "allowed_outputs": [
     ".codex/timeline/feat/refactor-feature-development/REVIEW.md",
