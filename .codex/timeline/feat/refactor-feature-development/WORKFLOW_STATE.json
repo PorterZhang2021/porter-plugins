@@ -1,0 +1,10 @@
+{
+  "state": "awaiting_commit",
+  "current_skill": "$porter-codex-plugin:solution-review",
+  "next_skill": "$porter-codex-plugin:commit",
+  "timeline": ".codex/timeline/feat/refactor-feature-development",
+  "allowed_outputs": [
+    ".codex/timeline/feat/refactor-feature-development/REVIEW.md",
+    ".codex/timeline/feat/refactor-feature-development/WORKFLOW_STATE.json"
+  ]
+}
