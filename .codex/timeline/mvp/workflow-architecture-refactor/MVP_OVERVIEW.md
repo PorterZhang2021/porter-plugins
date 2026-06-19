@@ -62,8 +62,8 @@ solution -> solution-task -> solution-execute -> solution-review
 | feat | 让 solution workflow 使用 timeline slice record 路由。 | `solution` 写入 `current.json`、`solutions/<slice>.md`、`states/<slice>.json`；`solution-task`、`solution-execute`、`solution-review` 通过 `current.json` 读取 active slice；旧路径只允许当前在途 slice 收尾，不再用于新 slice 创建。 | candidate |
 | feat | 定义 `solution/reference/*.md` type 模板。 | `feat`、`fix`、`refactor`、`perf`、`test`、`docs`、`build`、`ci`、`chore`、`style` 都有独立 reference 模板。 | review-ready |
 | chore | 明确新 solution 内容闭环与旧 workflow 的隔离边界。 | 不重构旧入口；不从旧入口迁移模板；影响范围只限 Codex 插件；命名和路径符合 kebab-case。 | review-ready |
-| chore | 审计 Codex 初始化类 skill 与 `.codex` 路径约定是否一致。 | `constitution` 应生成 `.codex/constitution.md`；`codex-md` 应检查并引用 `.codex/constitution.md`；根目录 `AGENTS.md` 保持 Codex 自动入口。 | candidate |
-| test | 定义当前 MVP 的文档配置验证方式。 | frontmatter、路径、链接、阶段边界、timeline 状态流、Visual Model 规则和 sample flow 完成结构审查。 | candidate |
+| docs | 更新 Codex workflow 推荐路径说明。 | README 能解释小需求从 `solution` 内容闭环进入，过程记录写入 `.codex/timeline/<timeline-name>/`，并说明 `delivery-*` 与 `solution` 是协同但不强绑定的独立线。 | active |
+| test | 定义当前 MVP 的文档配置验证方式。 | frontmatter、路径、链接、阶段边界、timeline 状态流、Visual Model 规则和 sample flow 完成结构审查；Codex 初始化类 `.codex` 路径审计并入本最终验证。 | candidate |
 
 ## Execute And Review Loop
 
@@ -112,8 +112,8 @@ flowchart LR
 
 ## Current Work Type
 
-- Type: feat
-- Reason: 先定义 `solution` 入口、solution 文件骨架和 type reference；后续 slice 在同一个 MVP 内继续补齐 `solution-task`、`solution-execute`、`solution-review`。
+- Type: docs
+- Reason: 当前 007 用于更新 Codex workflow 推荐路径说明，强调 solution 内容闭环、timeline slice record 过程记录和 Git 交付线边界。
 
 ## Slice Candidates
 
@@ -127,10 +127,9 @@ flowchart LR
 | 004 | feat | 定义 `solution-review`。 | 产出 review 文件；能记录 pass、needs-fix、needs-task-update、needs-solution-update 等结论；需要修复时只更新 review 结论和状态，不直接执行修复。 | candidate |
 | 005 | feat | 定义 timeline container 与 slice record 文件模型。 | `.codex/timeline/<timeline-name>/` 下通过 `current.json` 指向 active slice；`solutions/`、`tasks/`、`reviews/`、`states/` 分别保存同一 slice 的过程记录；`mvp` 不作为 slice type。 | candidate |
 | 006 | feat | 让 solution workflow 使用 timeline slice record 路由。 | `solution` 新建 `current.json`、`solutions/<slice>.md`、`states/<slice>.json`；`solution-task`、`solution-execute`、`solution-review` 从 `current.json` 找 active slice；旧 `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json` 只用于当前在途 slice 收尾，不再用于新 slice 创建。 | candidate |
-| 007 | chore | 审计 `constitution`、`codex-md` 与当前 `.codex` 路径约定。 | Codex 初始化类 skill 不再误用 `.claude/constitution.md`；如发现不一致，再拆出 fix slice。 | candidate |
-| 008 | docs | 更新 Codex workflow 推荐路径说明。 | 文档能解释小需求从 `solution` 内容闭环进入，并说明 `delivery-*` 与 `solution` 是协同但不强绑定的独立线。 | candidate |
-| 009 | build | 确认新增 solution skills 的插件暴露方式。 | 新增 skill 目录、frontmatter 和插件元数据完整；如 manifest 不需要手动登记则记录原因。 | candidate |
-| 010 | test | 做结构审查和样例流程验证。 | frontmatter、路径、链接、阶段边界、timeline 状态流和 Visual Model 规则通过审查。 | candidate |
+| 007 | docs | 更新 Codex workflow 推荐路径说明。 | 文档能解释小需求从 `solution` 内容闭环进入，过程记录写入 `.codex/timeline/<timeline-name>/`，并说明 `delivery-*` 与 `solution` 是协同但不强绑定的独立线。 | active |
+| 008 | build | 确认新增 solution skills 的插件暴露方式。 | 新增 skill 目录、frontmatter 和插件元数据完整；如 manifest 不需要手动登记则记录原因。 | candidate |
+| 009 | test | 做结构审查、样例流程验证和初始化路径审计。 | frontmatter、路径、链接、阶段边界、timeline 状态流和 Visual Model 规则通过审查；`constitution`、`codex-md` 与当前 `.codex` 路径约定一致，如发现不一致再拆出 fix slice。 | candidate |
 
 ## Out Of Current MVP
 
