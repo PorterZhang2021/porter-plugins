@@ -1,11 +1,11 @@
-# Solution: Define Solution Task
+# Solution: Define Solution Execute
 
 ## Timeline Context
 
 - Stage overview: `.codex/timeline/mvp/workflow-architecture-refactor/STAGE_OVERVIEW.md`
 - MVP overview: `.codex/timeline/mvp/workflow-architecture-refactor/MVP_OVERVIEW.md`
 - MVP: 1 - Solution 最小闭环
-- Work slice: 002
+- Work slice: 003
 - Slice type: `feat`
 - Branch: `feat/refactor-feature-development`
 - Timeline path: `.codex/timeline/feat/refactor-feature-development/`
@@ -17,8 +17,8 @@
 - Branch type: `feat`
 - Selected type: `feat`
 - Confidence: high
-- Reason: 本 slice 新增 `solution-task` workflow 能力，是用户可显式调用的新入口。
-- Alternatives considered: `refactor` 不合适，因为不是仅调整旧 `task`，而是新增独立 solution 链路阶段。
+- Reason: 本 slice 新增 `solution-execute` workflow 能力，是用户可显式调用的新入口。
+- Alternatives considered: `refactor` 不合适，因为不是调整旧 `execute` 行为，而是在其原型基础上新增独立 solution 链路执行阶段。
 
 ## Branch Rename Checkpoint
 
@@ -31,25 +31,30 @@
 
 ## Goal
 
-新增 `$porter-codex-plugin:solution-task`，让已经确认的 `SOLUTION.md` 可以生成新 solution 链路的 `TASK.md`，作为 `solution -> solution-task -> solution-execute -> solution-review` 最小闭环中的第二段。
+新增 `$porter-codex-plugin:solution-execute`，以现有 `$porter-codex-plugin:execute` / `$porter-codex-plugin:execute-branch` 为原型，定义新 solution workflow 的执行阶段。
+
+它从当前分支 timeline 的 `SOLUTION.md` 和 `TASK.md` 执行任务，更新任务状态和 workflow state，并在完成后进入 `$porter-codex-plugin:solution-review`。同时，它需要支持 review 回修模式：当 review 发现需要修复、补任务或更新方案时，`solution-execute` 可以读取 `REVIEW.md` 并执行回修，必要时更新 `TASK.md` 或 `SOLUTION.md`。
 
 ## Problem
 
-旧 `task` / `task-branch` 依赖：
+旧 `execute` / `execute-branch` 的输入和状态依赖旧 workflow：
 
-- `plan/<type>/<branch-name>/PLAN.md`
-- `plan/<type>/<branch-name>/ANALYSIS.md`
 - `plan/<type>/<branch-name>/TASK.md`
+- `plan/<type>/<branch-name>/PLAN.md`
+- `plan/<type>/<branch-name>/WORKFLOW_STATE.json`
+- 状态：`awaiting_execute` / `executing` / `execution_allowed` / `awaiting_review_or_commit`
+- 下一步：`review` / `review-branch` 或 `commit` / `commit-branch`
 
-新 solution 链路已经把方案统一到：
+新 solution 链路已经把方案和任务统一到：
 
 ```text
 .codex/timeline/<branch-type>/<branch-name>/SOLUTION.md
+.codex/timeline/<branch-type>/<branch-name>/TASK.md
+.codex/timeline/<branch-type>/<branch-name>/REVIEW.md
+.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json
 ```
 
-所以 `solution-task` 不能继续读取旧 `PLAN.md` / `ANALYSIS.md`，也不能把输出写回旧 `plan/` 目录。它需要从 `SOLUTION.md` 的通用字段、`Type-Specific Analysis`、`Visual Model` 和 `Acceptance` 中生成可执行任务，并保持 TDD / 度量 / 文档验证等 type-specific 节奏。
-
-当前 MVP 1 还没有引入 MVP 容器或多 slice 目录结构。因此本 slice 继续使用当前 timeline 根目录的 `SOLUTION.md`、`TASK.md`、`REVIEW.md` 和 `WORKFLOW_STATE.json`；上一轮 slice 001 的内容通过 Git 提交历史保留，不在文件路径上提前引入新的容器层。
+因此 `solution-execute` 需要复用旧 `execute` 的执行节奏和阶段边界，但不能读取旧 `plan/` 输入，也不能进入旧 review / commit 链路。它必须把执行完成后的状态推进到 `awaiting_solution_review`，并为后续 review 回修闭环预留明确状态。
 
 ## Context Read
 
@@ -57,170 +62,260 @@
 - [x] `.codex/constitution.md`
 - [x] `.codex/timeline/mvp/workflow-architecture-refactor/STAGE_OVERVIEW.md`
 - [x] `.codex/timeline/mvp/workflow-architecture-refactor/MVP_OVERVIEW.md`
-- [x] `plugins/porter-codex-plugin/skills/task/SKILL.md`
-- [x] `plugins/porter-codex-plugin/skills/task-branch/SKILL.md`
-- [x] `plugins/porter-codex-plugin/skills/task/reference/feat.md`
-- [x] `plugins/porter-codex-plugin/skills/task/templates/task_header.md`
 - [x] `plugins/porter-codex-plugin/skills/solution/SKILL.md`
+- [x] `plugins/porter-codex-plugin/skills/solution-task/SKILL.md`
+- [x] `plugins/porter-codex-plugin/skills/solution/reference/feat.md`
+- [x] `plugins/porter-codex-plugin/skills/execute/SKILL.md`
+- [x] `plugins/porter-codex-plugin/skills/execute-branch/SKILL.md`
+- [x] `plugins/porter-codex-plugin/skills/execute/reference/feat.md`
+- [x] `plugins/porter-codex-plugin/skills/execute/reference/fix.md`
 
 ## Scope
 
 ### In
 
-- 新增 `plugins/porter-codex-plugin/skills/solution-task/SKILL.md`。
-- 新增 `plugins/porter-codex-plugin/skills/solution-task/reference/*.md`，覆盖 `feat`、`fix`、`refactor`、`perf`、`test`、`docs`、`build`、`ci`、`chore`、`style`。
-- 新增 `plugins/porter-codex-plugin/skills/solution-task/templates/task-header.md`。
-- 定义 `solution-task` 的输入、输出、阶段边界和状态流。
-- 明确 `solution-task` 只读取 `SOLUTION.md`，不读取旧 `PLAN.md` / `ANALYSIS.md`。
-- 明确 `fix` 任务必须从复现测试开始。
-- 明确 `perf` 任务必须先度量，再优化，再验证。
-- 明确无业务逻辑的文档配置类任务通过结构审查验证。
+- 新增 `plugins/porter-codex-plugin/skills/solution-execute/SKILL.md`。
+- 新增 `plugins/porter-codex-plugin/skills/solution-execute/reference/*.md`，覆盖 `feat`、`fix`、`refactor`、`perf`、`test`、`docs`、`build`、`ci`、`chore`、`style`。
+- 明确 `solution-execute` 以旧 `execute` / `execute-branch` 为原型，但只服务新 solution timeline。
+- 明确首次执行模式：
+  - 输入 `SOLUTION.md`、`TASK.md`、`WORKFLOW_STATE.json`
+  - 允许状态 `awaiting_solution_execute` / `executing_solution`
+  - 执行前切换为 `executing_solution`
+  - 执行后切换为 `awaiting_solution_review`
+- 明确 review 回修模式：
+  - 输入 `REVIEW.md`、`TASK.md`、必要时读取 `SOLUTION.md`
+  - 允许状态 `awaiting_solution_execute_from_review` / `executing_solution_remediation`
+  - 回修后切回 `awaiting_solution_review`
+  - 可更新 `TASK.md`
+  - 只有 review 结论要求更新方案假设、验收、根因或瓶颈时，才可更新 `SOLUTION.md`
+- 明确每完成一个 task 或子步骤后更新 `TASK.md` checkbox。
+- 明确执行时按 selected type 读取 `solution-execute/reference/<type>.md`。
+- 明确执行完成后停止，提示用户显式调用 `$porter-codex-plugin:solution-review`。
+- 明确纯文档/配置任务可通过结构审查验证。
 
 ### Out
 
-- 不实现 `solution-execute`。
+- 不修改旧 `execute` / `execute-branch` / `execute-worktree`。
+- 不读取旧 `plan/<type>/<branch-name>/PLAN.md`。
+- 不读取旧 `plan/<type>/<branch-name>/ANALYSIS.md`。
+- 不读取旧 `plan/` workflow state。
 - 不实现 `solution-review`。
 - 不实现 `delivery-*` Git 生命周期。
-- 不修改旧 `task` / `task-branch` / `task-worktree`。
+- 不 commit、merge、push 或 create PR。
 - 不处理 worktree 并行模式。
 - 不引入 MVP 容器目录结构。
 - 不在本 slice 实现 hook guard 对 `.codex/timeline/` 的强约束。
 
 ## Type-Specific Analysis
 
-### Entry Semantics
+### 功能目标
+
+定义 `solution-execute` 入口和 type-specific 执行 reference，让新 solution 链路可以从 `TASK.md` 执行到 review 阶段。
+
+### 用户价值
+
+用户完成 `$porter-codex-plugin:solution-task` 并确认任务后，可以显式调用 `$porter-codex-plugin:solution-execute` 执行任务，而不再回到旧 `plan/` workflow。
+
+review 发现问题后，用户也可以再次调用 `solution-execute` 进入回修执行，而不是让 review 自己改实现。
+
+### 功能边界
+
+做：
+
+- 定义新 skill 的阶段边界、前置检查、状态流和收尾提示。
+- 定义首次执行和 review 回修执行两种模式。
+- 定义 type-specific 执行节奏 reference。
+- 定义允许读写文件边界。
+- 定义与旧 `execute` 原型的映射关系。
+
+不做：
+
+- 不真正执行当前 slice 的后续任务。
+- 不定义 review 产物结构细节，那属于 `solution-review` slice。
+- 不实现 Git delivery 生命周期。
+- 不删除旧 execute 系列。
+
+### 方案设计
+
+新增目录：
+
+```text
+plugins/porter-codex-plugin/skills/solution-execute/
+  SKILL.md
+  reference/
+    feat.md
+    fix.md
+    refactor.md
+    perf.md
+    test.md
+    docs.md
+    build.md
+    ci.md
+    chore.md
+    style.md
+```
+
+`SKILL.md` 负责通用执行控制：
+
+1. 确认当前分支不是 `main` / `master`。
+2. 解析 `<branch-type>/<branch-name>`。
+3. 读取 `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json`。
+4. 根据 state 选择执行模式：
+   - `awaiting_solution_execute` -> first execution
+   - `awaiting_solution_execute_from_review` -> review remediation
+   - `executing_solution` -> 允许继续 first execution
+   - `executing_solution_remediation` -> 允许继续 remediation
+   - 其他状态停止，并提示 `next_skill`
+5. 读取 `SOLUTION.md` 和 `TASK.md`。
+6. 从 `SOLUTION.md` 的 `Type Decision` 读取 selected type。
+7. 读取 `reference/<type>.md`。
+8. 按 `TASK.md` checkbox 顺序执行第一个未完成任务或继续当前 `[~]` 任务。
+9. 每完成一项，更新 `TASK.md` 状态。
+10. 全部任务完成后写入 `WORKFLOW_STATE.json`，进入 `awaiting_solution_review`。
+
+review 回修模式额外读取 `REVIEW.md`，并根据 review 结论决定：
+
+- 只修实现：修改实现文件并更新 `TASK.md`。
+- 需补任务：更新 `TASK.md` 后执行新增或未完成任务。
+- 需更新方案：在 review 明确指出方案假设、验收标准、根因或瓶颈变化时，更新 `SOLUTION.md`，再同步 `TASK.md`。
+- 需升级 MVP：停止执行，提示回到 MVP discussion，不继续假定修复。
+
+### 原型映射
+
+| 旧 execute 原型 | 新 solution-execute |
+| --- | --- |
+| `plan/<type>/<branch-name>/TASK.md` | `.codex/timeline/<branch-type>/<branch-name>/TASK.md` |
+| `plan/<type>/<branch-name>/PLAN.md` fallback | 不提供 fallback，必须已有 `TASK.md` |
+| `plan/<type>/<branch-name>/WORKFLOW_STATE.json` | `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json` |
+| `awaiting_execute` | `awaiting_solution_execute` |
+| `executing` | `executing_solution` |
+| `awaiting_review_or_commit` | `awaiting_solution_review` |
+| `review` / `review-branch` | `solution-review` |
+| `commit` / `commit-branch` alternate | 不提供 alternate；review 后再进入 commit |
+| `execute/reference/<type>.md` | `solution-execute/reference/<type>.md` |
+
+### 接口或配置
 
 唯一入口：
-
-```text
-$porter-codex-plugin:solution-task
-```
-
-`solution-task` 的职责是把已确认的 `SOLUTION.md` 拆成 `TASK.md`。它不和用户重新讨论方案方向；如果发现 `SOLUTION.md` 的 `Confirmation Needed` 未解决、type 不清楚、验收不完整，则停止并提示回到 `$porter-codex-plugin:solution` 调整方案。
-
-### Input
-
-读取当前分支 timeline：
-
-```text
-.codex/timeline/<branch-type>/<branch-name>/SOLUTION.md
-```
-
-多 slice 文件结构留到后续 MVP 容器阶段设计。
-
-### Output
-
-生成：
-
-```text
-.codex/timeline/<branch-type>/<branch-name>/TASK.md
-.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json
-```
-
-### State Transition
-
-建议状态：
-
-```json
-{
-  "state": "awaiting_solution_execute",
-  "current_skill": "$porter-codex-plugin:solution-task",
-  "next_skill": "$porter-codex-plugin:solution-execute",
-  "timeline": ".codex/timeline/<branch-type>/<branch-name>",
-  "allowed_outputs": [
-    ".codex/timeline/<branch-type>/<branch-name>/TASK.md",
-    ".codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json"
-  ]
-}
-```
-
-### Task Generation Rules
-
-- `feat`：有可执行行为变化时必须遵循 TDD Red / Green / Refactor；行为测试必须包含 Case / Given / When / Then / Assert 或 Verify；无业务逻辑的 skill 文档和 reference 可标注"无需测试，通过结构审查验证"。
-- 所有 type 的任务都必须包含 `验收标准` 和 `验证方式`；验收标准应对应 `SOLUTION.md` 的 `Acceptance`，验证方式应说明可观察证据。
-- `fix`：Task 1 必须是复现 Bug 的失败测试；Task 2 是最小修复；Task 3 是回归验证。
-- `refactor`：每步重构必须保持行为不变，任务中明确回归检查点。
-- `perf`：Task 1 必须是基线度量或采集计划；优化任务必须在度量之后；最后必须有量化验证。
-- `fix` / `perf`：生成的修复或优化任务是有条件的；如果执行时复现、根因、基线或瓶颈判断被推翻，应先进入 review 记录问题，再由 review 回修执行更新 `TASK.md`，必要时更新 `SOLUTION.md`。
-- `test`：只生成测试相关任务，不生成实现任务，除非测试基础设施缺失。
-- `docs`：生成写作、结构审查、链接检查任务。
-- `build`：生成配置修改、构建验证和产物验证任务；如果没有持久产物，必须记录原因并验证可观察输出。
-- `ci`：生成配置修改和可运行验证任务。
-- `chore`：按风险决定是否需要测试；至少需要结构审查或 diff 审查。
-- `style`：生成格式化、命名、lint 或结构一致性验证任务。
-
-### Stop Rule
-
-生成 `TASK.md` 后必须停止，询问用户是否要补充、删除或调整任务。
-
-如果用户确认无调整，再提示显式调用：
 
 ```text
 $porter-codex-plugin:solution-execute
 ```
 
+不新增命令参数。
+
+### 数据流
+
+首次执行：
+
+```text
+WORKFLOW_STATE.json(awaiting_solution_execute)
+  -> solution-execute
+  -> WORKFLOW_STATE.json(executing_solution)
+  -> read SOLUTION.md + TASK.md + reference/<type>.md
+  -> edit implementation/config/docs and TASK.md
+  -> WORKFLOW_STATE.json(awaiting_solution_review)
+```
+
+review 回修：
+
+```text
+WORKFLOW_STATE.json(awaiting_solution_execute_from_review)
+  -> solution-execute
+  -> WORKFLOW_STATE.json(executing_solution_remediation)
+  -> read REVIEW.md + TASK.md + SOLUTION.md
+  -> edit implementation/config/docs, TASK.md, and maybe SOLUTION.md
+  -> WORKFLOW_STATE.json(awaiting_solution_review)
+```
+
+### 实现顺序
+
+1. 创建 `solution-execute/SKILL.md`，定义入口、边界、路径和状态机。
+2. 创建 `solution-execute/reference/*.md`，从旧 `execute/reference/*.md` 迁移执行节奏，移除旧 `plan/` 假设。
+3. 在 `SKILL.md` 中定义首次执行模式和 review 回修模式。
+4. 定义 `WORKFLOW_STATE.json` 输出示例。
+5. 运行 skill frontmatter 校验、JSON 示例校验、Markdown 围栏检查和路径搜索。
+
 ## Visual Model
 
 ```mermaid
 flowchart TD
-  A["Read current branch and timeline"] --> B["Load SOLUTION.md"]
-  B --> C{"SOLUTION.md confirmed?"}
-  C -- "No" --> D["Stop and ask user to update solution"]
-  C -- "Yes" --> E["Detect selected type"]
-  E --> F["Load solution-task/reference/<type>.md"]
-  F --> G["Generate TASK.md with type-specific rhythm"]
-  G --> H["Write WORKFLOW_STATE.json"]
-  H --> I["Stop and ask for task confirmation"]
+  A["User calls solution-execute"] --> B["Read current branch timeline"]
+  B --> C["Load WORKFLOW_STATE.json"]
+  C --> D{"state?"}
+  D -- "awaiting_solution_execute" --> E["Set executing_solution"]
+  D -- "awaiting_solution_execute_from_review" --> F["Set executing_solution_remediation"]
+  D -- "other" --> X["Stop and prompt next_skill"]
+  E --> G["Read SOLUTION.md + TASK.md"]
+  F --> H["Read REVIEW.md + TASK.md + SOLUTION.md"]
+  G --> I["Detect selected type"]
+  H --> I
+  I --> J["Load solution-execute/reference/<type>.md"]
+  J --> K["Execute next unchecked task"]
+  K --> L["Update TASK.md checkboxes"]
+  L --> M{"all tasks done?"}
+  M -- "No" --> K
+  M -- "Yes" --> N["Write awaiting_solution_review"]
+  N --> O["Stop and prompt solution-review"]
 ```
 
 ## Proposed Changes
 
-- Add `plugins/porter-codex-plugin/skills/solution-task/SKILL.md`.
-- Add `plugins/porter-codex-plugin/skills/solution-task/reference/feat.md`.
-- Add `plugins/porter-codex-plugin/skills/solution-task/reference/fix.md`.
-- Add `plugins/porter-codex-plugin/skills/solution-task/reference/refactor.md`.
-- Add `plugins/porter-codex-plugin/skills/solution-task/reference/perf.md`.
-- Add `plugins/porter-codex-plugin/skills/solution-task/reference/test.md`.
-- Add `plugins/porter-codex-plugin/skills/solution-task/reference/docs.md`.
-- Add `plugins/porter-codex-plugin/skills/solution-task/reference/build.md`.
-- Add `plugins/porter-codex-plugin/skills/solution-task/reference/ci.md`.
-- Add `plugins/porter-codex-plugin/skills/solution-task/reference/chore.md`.
-- Add `plugins/porter-codex-plugin/skills/solution-task/reference/style.md`.
-- Add `plugins/porter-codex-plugin/skills/solution-task/templates/task-header.md`.
+- Add `plugins/porter-codex-plugin/skills/solution-execute/SKILL.md`.
+- Add `plugins/porter-codex-plugin/skills/solution-execute/reference/feat.md`.
+- Add `plugins/porter-codex-plugin/skills/solution-execute/reference/fix.md`.
+- Add `plugins/porter-codex-plugin/skills/solution-execute/reference/refactor.md`.
+- Add `plugins/porter-codex-plugin/skills/solution-execute/reference/perf.md`.
+- Add `plugins/porter-codex-plugin/skills/solution-execute/reference/test.md`.
+- Add `plugins/porter-codex-plugin/skills/solution-execute/reference/docs.md`.
+- Add `plugins/porter-codex-plugin/skills/solution-execute/reference/build.md`.
+- Add `plugins/porter-codex-plugin/skills/solution-execute/reference/ci.md`.
+- Add `plugins/porter-codex-plugin/skills/solution-execute/reference/chore.md`.
+- Add `plugins/porter-codex-plugin/skills/solution-execute/reference/style.md`.
+- Update `.codex/timeline/feat/refactor-feature-development/TASK.md` in the next `solution-task` stage.
+- Update `.codex/timeline/feat/refactor-feature-development/WORKFLOW_STATE.json` in the next stages as the workflow advances.
 
 ## Acceptance
 
-- `solution-task` skill frontmatter is valid.
-- `solution-task` only generates or updates `TASK.md` and `WORKFLOW_STATE.json`.
-- `solution-task` does not execute tasks, review, commit, merge, push, or create PR.
-- `solution-task` reads `SOLUTION.md`, not old `PLAN.md` / `ANALYSIS.md`.
-- `solution-task` refuses to proceed if `SOLUTION.md` lacks selected type, acceptance, scope, or unresolved confirmation handling.
-- `TASK.md` has a consistent header and task status legend.
-- Every generated task includes `验收标准` and `验证方式`.
-- `feat` tasks use Red / Green / Refactor for executable behavior and include Case / Given / When / Then / Assert or Verify in behavior tests.
-- `fix` tasks start with a reproduction test.
-- `perf` tasks start with baseline measurement or a baseline collection plan.
-- `fix` / `perf` references state that stale fix or optimization tasks must not continue when execution contradicts reproduction, root cause, baseline, or bottleneck assumptions.
-- `build` tasks include artifact verification, not only build command success.
-- `docs` / `chore` / `style` tasks can explicitly mark "无业务逻辑，无需测试" and use structure review as validation.
-- `WORKFLOW_STATE.json` transitions to `awaiting_solution_execute`.
-- The implementation does not modify old `task-*` skills.
-- The implementation does not introduce MVP container structures.
+- `solution-execute` skill frontmatter is valid.
+- `solution-execute` is documented as based on existing `execute` / `execute-branch` prototypes.
+- `solution-execute` reads `.codex/timeline/<branch-type>/<branch-name>/SOLUTION.md`, `TASK.md`, and `WORKFLOW_STATE.json`.
+- `solution-execute` does not read old `plan/PLAN.md`, `plan/ANALYSIS.md`, or old `plan/WORKFLOW_STATE.json`.
+- `solution-execute` refuses to run from unsupported workflow states and prompts the recorded `next_skill`.
+- First execution mode supports `awaiting_solution_execute` and `executing_solution`.
+- Review remediation mode supports `awaiting_solution_execute_from_review` and `executing_solution_remediation`.
+- First execution writes `executing_solution` before modifying implementation/config/docs files.
+- Review remediation writes `executing_solution_remediation` before modifying implementation/config/docs files.
+- First execution completion writes `awaiting_solution_review`.
+- Review remediation completion writes `awaiting_solution_review`.
+- `current_skill` and `next_skill` in output state point to `$porter-codex-plugin:solution-execute` and `$porter-codex-plugin:solution-review`.
+- `TASK.md` checkbox updates are required after completing tasks.
+- `SOLUTION.md` can be updated only in review remediation mode and only when review identifies changed assumptions, acceptance, root cause, or bottleneck analysis.
+- `REVIEW.md` is read only in review remediation mode.
+- `solution-execute` does not execute review, commit, merge, push, or create PR.
+- `solution-execute/reference/*.md` covers all supported types.
+- `feat` execution keeps Red / Green / Refactor behavior from the old execute prototype.
+- `fix` execution keeps reproduction -> fix -> regression verification from the old execute prototype.
+- `perf` execution keeps baseline -> bottleneck -> optimization -> measurement verification.
+- Docs/config-only tasks can use structure review as validation.
+- Implementation does not modify old `execute-*` skills.
+- Implementation does not introduce MVP container structures.
 
 ## Risks
 
-- 当前 root timeline 只有一组 `SOLUTION.md` / `TASK.md` / `REVIEW.md`，后续 slice 会覆盖上一轮工作文件；当前阶段接受这一点，依赖 Git 提交历史追溯，避免提前引入 MVP 容器结构。
-- 如果 `solution-task` 复用旧 `task/reference/*.md` 太多，会把旧 `PLAN.md` 假设带进新链路；建议新建 `solution-task/reference/*.md`。
-- 如果状态名复用旧 `awaiting_execute`，hook guard 可能把新旧链路混在一起；建议使用 `awaiting_solution_execute`。
-- 如果 `SOLUTION.md` 的 `Confirmation Needed` 未解决就生成任务，会跳过结对确认点。
+- 如果直接复制旧 `execute`，容易保留 `plan/` fallback 或旧 `awaiting_review_or_commit` 状态；本 slice 必须显式移除旧路径和旧状态。
+- 如果允许 `solution-execute` 在任意状态下运行，会破坏新 workflow 的阶段边界；必须先检查 `WORKFLOW_STATE.json`。
+- review 回修模式允许更新 `SOLUTION.md`，需要严格限定在 review 明确指出方案假设、验收、根因或瓶颈变化时，避免执行阶段随意改方案。
+- 当前 MVP 1 还没有 hook guard 强约束 `.codex/timeline/` 写入，执行边界主要靠 skill 文档约束。
+- 当前 root timeline 只有一组 `SOLUTION.md` / `TASK.md` / `REVIEW.md`，本 slice 会覆盖上一轮过程文件；当前阶段接受这一点，依赖 Git 提交历史追溯。
 
 ## Confirmation
 
-- 已确认当前 MVP 1 继续使用根 timeline 文件，不引入 MVP 容器目录结构。
-- 已确认 `solution-task` 新建自己的 `reference/*.md`，可以参考旧 `task/reference/*.md`，但不复用旧文件。
-- 已确认状态名采用 `awaiting_solution_execute`。
-- 已确认本 slice 只定义 `solution-task`，不顺手做 `solution-execute`。
+- 已确认 `solution-execute` 的原型是现有 `$porter-codex-plugin:execute` / `$porter-codex-plugin:execute-branch`。
+- 已确认本 slice 是在旧 execute 基础上定义新的 solution 链路执行阶段，而不是修改旧 execute。
+- 已确认本 slice 需要支持首次执行和 review 回修执行两种模式。
+- 已确认本 slice 只定义 `solution-execute`，不顺手实现 `solution-review`。
 
 ## Next Step
 
-实现已完成。下一步进入 `$porter-codex-plugin:solution-review` 审查 `solution-task`。
+请确认本方案是否符合预期。若无需调整，请显式调用 `$porter-codex-plugin:solution-task` 生成 slice 003 的 `TASK.md`。
