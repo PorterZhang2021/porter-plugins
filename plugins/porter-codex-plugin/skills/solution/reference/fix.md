@@ -72,4 +72,4 @@ flowchart TD
 
 - 第一个任务必须是复现或回归验证任务。
 - 修复任务必须在复现或验证任务之后。
-- 新 solution workflow 中不额外调用 `$porter-codex-plugin:analyze-bug`。
+- 新 solution workflow 在 solution 文件内完成复现与根因分析，不额外依赖旧分析入口。

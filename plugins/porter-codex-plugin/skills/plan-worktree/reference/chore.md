@@ -1,9 +1,0 @@
-# chore — 维护规划
-
-生成 `plan/chore/<branch-name>/PLAN.md`：
-
-1. **变更内容** — 具体要做什么（升级依赖/调整配置/清理代码）
-2. **风险评估** — 可能影响哪些功能
-3. **回滚方案** — 出问题如何恢复
-
-收尾：提示下一步运行 `$porter-codex-plugin:execute` 或 `$porter-codex-plugin:task`

@@ -1,7 +1,6 @@
 ---
 name: learn-english
 description: 意图确认 + 英语纠错辅助，防止英文表达不精确导致执行偏差。输出"我的理解"（中文）供用户确认后再执行任务，附带英文纠错供学习。
-argument-hint: "<用英文或中文描述你想做什么>"
 ---
 
 # Learn English Skill

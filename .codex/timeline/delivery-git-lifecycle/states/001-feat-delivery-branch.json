@@ -1,0 +1,10 @@
+{
+  "state": "cancelled",
+  "current_skill": "$porter-codex-plugin:solution-review",
+  "timeline": ".codex/timeline/delivery-git-lifecycle",
+  "active_slice": "001-feat-delivery-branch",
+  "solution": ".codex/timeline/delivery-git-lifecycle/solutions/001-feat-delivery-branch.md",
+  "task": ".codex/timeline/delivery-git-lifecycle/tasks/001-feat-delivery-branch.md",
+  "review": ".codex/timeline/delivery-git-lifecycle/reviews/001-feat-delivery-branch.md",
+  "allowed_outputs": []
+}

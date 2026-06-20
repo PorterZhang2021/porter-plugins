@@ -6,7 +6,7 @@
 - 时间线：`.codex/timeline/<timeline-name>/`
 - 当前切片：`<slice-id>-<type>-<slug>`
 - 状态：`.codex/timeline/<timeline-name>/states/<slice-id>-<type>-<slug>.json`
-- 分支：`<branch-type>/<branch-name>`
+- 工作上下文：`<current-checkout-or-user-confirmed-context>`
 - 类型：`<selected-type>`
 - 下一阶段：`$porter-codex-plugin:solution-execute`
 

@@ -1,7 +1,7 @@
 {
   "name": "porter-codex-plugin",
-  "version": "1.9.0+codex.20260619152110",
-  "description": "\u4e2a\u4eba Codex \u5de5\u4f5c\u6d41\u63d2\u4ef6\uff0c\u542b\u5168\u91cf\u5de5\u4f5c\u6d41 Skills",
+  "version": "2.0.0+codex.20260620111928",
+  "description": "\u4e2a\u4eba Codex solution-first \u5de5\u4f5c\u6d41\u63d2\u4ef6",
   "author": {
     "name": "PorterZhang2021",
     "url": "https://github.com/PorterZhang2021"
@@ -9,9 +9,9 @@
   "repository": "https://github.com/PorterZhang2021/porter-plugins",
   "keywords": [
     "workflow",
-    "git",
-    "commit",
-    "plan",
+    "solution",
+    "review",
+    "timeline",
     "skills",
     "codex"
   ],
@@ -19,18 +19,19 @@
   "interface": {
     "displayName": "Porter Codex Plugin",
     "shortDescription": "Personal workflow skills for Codex.",
-    "longDescription": "Porter Codex Plugin packages the full personal AI development workflow as Codex skills, including planning, tasking, execution, commits, pull requests, documentation, and project configuration helpers.",
+    "longDescription": "Porter Codex Plugin packages the solution-first personal AI development workflow as Codex skills, including solution planning, tasking, branch-name alignment, lifecycle guards, execution, review, commit message validation, documentation, and project configuration helpers.",
     "developerName": "PorterZhang2021",
     "category": "Productivity",
     "capabilities": [
       "Skills",
       "Workflow",
-      "Git"
+      "Git hooks",
+      "Documentation"
     ],
     "defaultPrompt": [
-      "Help me plan this change.",
-      "Create a Codex worktree branch.",
-      "Review and commit my current changes."
+      "Help me create a solution for this change.",
+      "Generate tasks for the active solution slice.",
+      "Review the active solution slice."
     ],
     "brandColor": "#2563EB"
   }

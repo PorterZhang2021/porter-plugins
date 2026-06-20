@@ -1,6 +1,6 @@
 ---
 name: solution-review
-description: 在 solution-execute 后审查 active solution timeline slice，写入 slice review 文件，并根据通过或回修结论更新 state
+description: 审查 active solution timeline slice，写入 review 文件；pass 后进入用户 commit 确认态，有问题时回到 solution-execute 回修
 allowed-tools:
   - Bash
   - Read
@@ -31,12 +31,13 @@ solution -> solution-task -> solution-execute -> solution-review
 - 不执行修复。
 - 不提交。
 - 不合并、不 push、不 create PR。
-- review 完成后停止，并提示用户调用下一个明确 skill。
+- review 完成后停止，并提示用户下一步。
 
 新 slice 的 review 输出：
 
 ```text
 .codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.md
+.codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.contract.json
 .codex/timeline/<timeline-name>/states/<slice-id>-<type>-<slug>.json
 ```
 
@@ -48,6 +49,15 @@ $porter-codex-plugin:solution-review
 
 无需命令参数。
 
+## Protected Branch Guard
+
+review 前必须检查当前 Git 分支。
+
+- 如果当前分支是 `main` 或 `master`，停止，不写 review 或 state，提示用户先自行切换到开发分支或使用 Codex 原生 Git 能力创建工作上下文。
+- 不要求分支名符合 `<type>/<name>`。
+- 不要求分支 type 等于 slice type。
+- 不要求存在 `branch.<branch>.porter-base`。
+
 ## 路径解析
 
 `solution-review` 不创建新的 slice id。
@@ -55,7 +65,7 @@ $porter-codex-plugin:solution-review
 timeline name 解析顺序：
 
 1. 如果用户在本轮对话中明确确认了 timeline name，使用该名称。
-2. 否则使用当前 `<branch-name>` 作为默认 timeline name。
+2. 如果当前分支不是 `main` / `master`，可以把分支名第一段 `/` 之后的部分作为默认 timeline name；没有 `/` 时，可以把整个分支名作为默认 timeline name。
 3. 如果默认 `.codex/timeline/<timeline-name>/current.json` 不存在，扫描 `.codex/timeline/*/current.json`。
 4. 只有当扫描结果中恰好一个 `current.json` 指向允许 `$porter-codex-plugin:solution-review` 的 state 时，才使用该 timeline。
 5. 如果没有匹配或存在多个匹配，停止并请用户明确 timeline name。
@@ -69,21 +79,14 @@ review 前：
    - `review`
    - `state`
 3. 从 `states/<slice>.json` 读取 active slice state。
-4. 如果 `current.json` 不存在，但旧 `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json` 存在，进入旧路径在途收尾模式：
-   - solution 文件映射到 `.codex/timeline/<branch-type>/<branch-name>/SOLUTION.md`
-   - task 文件映射到 `.codex/timeline/<branch-type>/<branch-name>/TASK.md`
-   - review 文件映射到 `.codex/timeline/<branch-type>/<branch-name>/REVIEW.md`
-   - state 文件映射到 `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json`
-   - 只有旧 state 允许 `$porter-codex-plugin:solution-review` 时才继续
-5. 新 slice 创建必须使用新路径，并且只能由 `$porter-codex-plugin:solution` 完成。
+4. 新 slice 创建必须使用新路径，并且只能由 `$porter-codex-plugin:solution` 完成。
 
 ## 前置条件
 
 1. 确认 `AGENTS.md` 存在。
 2. 确认 `.codex/constitution.md` 存在。
-3. 确认当前分支不是 `main` 或 `master`。
-4. 读取当前分支名，并确认符合 `<branch-type>/<branch-name>`。
-5. 通过 `current.json` 解析 active slice；如果没有 `current.json` 但存在旧 `WORKFLOW_STATE.json`，进入旧路径在途收尾模式。
+3. 执行 protected branch guard。
+4. 通过 `current.json` 解析 active slice。
 
 必须存在的 active slice 文件：
 
@@ -117,10 +120,37 @@ review 前必须读取 active slice state。
 允许状态：
 
 - `awaiting_solution_review`
+- `reviewing_solution`
 
-如果 state 缺失或不是 `awaiting_solution_review`，停止并提示用户显式调用 state 文件中记录的 `next_skill`。
+如果 state 缺失或不是上述状态，停止并提示：
+
+- 若 state 是 `awaiting_user_commit_confirm` 且用户提出新修改，调用 `$porter-codex-plugin:solution-execute` 回修。
+- 若 state 是 `awaiting_user_commit_confirm` 且用户确认 commit，按本文`Commit Confirmation`执行普通 Git commit。
+- 若 state 是 `committed` 或 `cancelled`，该 slice 已结束。
+- 其他状态按 state 文件中的 `next_skill` 继续。
 
 没有明确 state 时不得继续。
+
+## Reviewing 中间态
+
+开始收集 review 输入前，先把 active slice state 写为：
+
+```json
+{
+  "state": "reviewing_solution",
+  "current_skill": "$porter-codex-plugin:solution-review",
+  "next_skill": "$porter-codex-plugin:solution-review",
+  "timeline": ".codex/timeline/<timeline-name>",
+  "active_slice": "<slice-id>-<type>-<slug>",
+  "solution": ".codex/timeline/<timeline-name>/solutions/<slice-id>-<type>-<slug>.md",
+  "task": ".codex/timeline/<timeline-name>/tasks/<slice-id>-<type>-<slug>.md",
+  "review": ".codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.md",
+  "allowed_outputs": [
+    ".codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.md",
+    ".codex/timeline/<timeline-name>/states/<slice-id>-<type>-<slug>.json"
+  ]
+}
+```
 
 ## Review 输入
 
@@ -209,12 +239,12 @@ git ls-files --others --exclude-standard
 - 每个已完成任务都有验证证据或已记录限制。
 - 当前 diff 和范围内未跟踪文件只包含本 slice 允许的文件。
 - 修改实现或配置文件时，新增或修改文件仍在 Codex plugin 路径边界内。
-- 除非 solution 明确要求，否则没有修改旧 `plan-*`、`execute-*`、`review-*` 或 Claude 侧配置。
+- 除非 solution 明确要求，否则没有修改 Claude 侧配置。
 - 已修改 skill 的 Markdown frontmatter 有效。
 - JSON 示例或 state 文件可以解析。
 - Markdown 代码围栏成对闭合。
 - 状态可以进入正确的下一阶段。
-- review 输出没有引入本 solution loop 之外的 state。
+- review 输出没有引入本 solution loop 之外的 state，除非明确进入终止态 `cancelled`。
 
 ## REVIEW.md 结构
 
@@ -255,7 +285,7 @@ git ls-files --others --exclude-standard
 
 ## 下一步
 
-<下一个明确 skill>
+<下一个明确动作>
 ```
 
 `Result` 必须严格使用以下值之一：
@@ -273,7 +303,7 @@ git ls-files --others --exclude-standard
 无
 ```
 
-如果 review 发现范围、假设、验收标准、根因或瓶颈问题需要重新确认，使用 `needs-solution-update`。不要引入其它 state。
+如果 review 发现范围、假设、验收标准、根因或瓶颈问题需要重新确认，使用 `needs-solution-update`。不要引入其它 result。
 
 ## Result 规则
 
@@ -296,20 +326,79 @@ git ls-files --others --exclude-standard
 
 ```json
 {
-  "state": "awaiting_commit",
+  "state": "awaiting_user_commit_confirm",
   "current_skill": "$porter-codex-plugin:solution-review",
-  "next_skill": "$porter-codex-plugin:commit",
   "timeline": ".codex/timeline/<timeline-name>",
   "active_slice": "<slice-id>-<type>-<slug>",
   "solution": ".codex/timeline/<timeline-name>/solutions/<slice-id>-<type>-<slug>.md",
   "task": ".codex/timeline/<timeline-name>/tasks/<slice-id>-<type>-<slug>.md",
   "review": ".codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.md",
+  "review_contract": ".codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.contract.json",
+  "review_contract_blob": "<git blob oid of review_contract>",
   "allowed_outputs": [
     ".codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.md",
+    ".codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.contract.json",
     ".codex/timeline/<timeline-name>/states/<slice-id>-<type>-<slug>.json"
   ]
 }
 ```
+
+`awaiting_user_commit_confirm` 不写 `next_skill`。用户可以确认 commit，也可以提出新修改并回到 `$porter-codex-plugin:solution-execute`。
+
+review pass 必须同时写入 review contract 文件，路径固定为：
+
+```text
+.codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.contract.json
+```
+
+contract 文件是 commit confirmation 的 path/blob/mode policy source，state 只记录 `review_contract` 和 `review_contract_blob`。`review_contract_blob` 必须在 contract 文件写入完成后通过 `git hash-object --path=<contract-path> -- <contract-path>` 计算。review pass 还必须把同一个 blob 写入本地 Git anchor：
+
+```bash
+mkdir -p "$(git rev-parse --git-path porter-solution-contracts/<timeline-name>)"
+printf '%s\n' "<review-contract-blob>" > "$(git rev-parse --git-path porter-solution-contracts/<timeline-name>/<slice-id-type-slug>.contract.blob)"
+```
+
+commit hook 会从 state 路径确定性推导 contract 路径，并校验 staged contract blob 同时等于 state 中记录的 `review_contract_blob` 和本地 `.git` anchor，防止 commit 前改写 state 或 contract 来扩大白名单。本地 anchor 是提交确认的安全锚点，不进入 Git commit。
+
+contract 文件结构：
+
+```json
+{
+  "timeline": ".codex/timeline/<timeline-name>",
+  "active_slice": "<slice-id>-<type>-<slug>",
+  "state": ".codex/timeline/<timeline-name>/states/<slice-id>-<type>-<slug>.json",
+  "review": ".codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.md",
+  "reviewed_paths": [
+    ".codex/timeline/<timeline-name>/solutions/<slice-id>-<type>-<slug>.md",
+    ".codex/timeline/<timeline-name>/tasks/<slice-id>-<type>-<slug>.md",
+    ".codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.md",
+    "<reviewed implementation/config/documentation path>"
+  ],
+  "reviewed_path_blobs": {
+    ".codex/timeline/<timeline-name>/solutions/<slice-id>-<type>-<slug>.md": "<git blob oid>",
+    ".codex/timeline/<timeline-name>/tasks/<slice-id>-<type>-<slug>.md": "<git blob oid>",
+    ".codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.md": "<git blob oid>",
+    "<reviewed implementation/config/documentation path>": "<git blob oid or __deleted__>"
+  },
+  "reviewed_path_modes": {
+    ".codex/timeline/<timeline-name>/solutions/<slice-id>-<type>-<slug>.md": "<git file mode>",
+    ".codex/timeline/<timeline-name>/tasks/<slice-id>-<type>-<slug>.md": "<git file mode>",
+    ".codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.md": "<git file mode>",
+    "<reviewed implementation/config/documentation path>": "<git file mode or __deleted__>"
+  }
+}
+```
+
+`reviewed_paths` 必须列出本次 review 已覆盖、允许进入本次 commit 的非 state、非 contract 文件路径，使用 repo-relative path。active state 文件和 review contract 文件不需要放入 `reviewed_paths`，commit confirmation 可单独 stage 它们。不得把未审查文件、宽泛目录或 `.` 写入 `reviewed_paths`。
+
+`reviewed_path_blobs` 必须记录每个 `reviewed_paths` 路径在 review pass 时的 Git blob oid；如果 review 确认该路径应被删除，值写为 `__deleted__`。`reviewed_path_modes` 必须记录每个 `reviewed_paths` 路径在 review pass 时的 Git file mode，例如 `100644`、`100755` 或删除标记 `__deleted__`。对已跟踪或未跟踪但存在于工作区的文件，可以使用：
+
+```bash
+git hash-object --path=<repo-relative-path> -- <repo-relative-path>
+git ls-files -s -- <repo-relative-path>
+```
+
+安装的 `commit-msg` hook 会用最终 staged blob oid、mode 或删除状态对比 review contract，防止 review pass 后同路径内容或 executable bit 被改写后提交。
 
 当结果为 `needs-fix`、`needs-task-update` 或 `needs-solution-update` 时，写入 active slice state：
 
@@ -332,21 +421,70 @@ git ls-files --others --exclude-standard
 
 review 阶段不得写入 task 文件或 solution 文件。回修属于 `$porter-codex-plugin:solution-execute`。
 
-## 旧路径在途收尾
+## Commit Confirmation
 
-规则：
+这里不是新的 plugin skill。它是 review pass 后的普通对话动作：
 
-- 如果 `current.json` 存在，优先使用新路径。
-- 如果 `current.json` 不存在但旧 `WORKFLOW_STATE.json` 存在，只有旧 state 允许进入 `$porter-codex-plugin:solution-review` 时才继续旧路径收尾。
-- 新 slice 创建必须使用新路径。
-- 不自动迁移旧文件。
-- 不删除旧文件。
+1. 仅当 active slice state 是 `awaiting_user_commit_confirm`，且用户明确确认要 commit 时执行。
+2. 重新读取 `current.json`、active state、solution、task、review 和 `git status --short`。
+3. 生成 commit message，subject 必须符合：
+
+```text
+<type>(<scope>): <summary>
+```
+
+4. commit message 必须包含 trailers：
+
+```text
+Codex-Timeline: <timeline-name>
+Codex-Slice: <slice-id-type-slug>
+```
+
+5. `type` 默认与 slice type 一致；如需不同 type，必须先让用户确认。
+6. `type` 必须属于 solution workflow 支持的 commit type：`feat`、`fix`、`refactor`、`perf`、`test`、`docs`、`build`、`ci`、`chore`、`style`。
+7. 如果当前仓库需要普通 `git commit` 自动触发检查，先显式运行 `plugins/porter-codex-plugin/scripts/install-solution-commit-msg-hook.sh --repo .`。该安装器写入目标仓库 `.git/hooks/commit-msg`，插件安装本身不自动改 Git hooks。
+8. 可以用 `plugins/porter-codex-plugin/scripts/validate-solution-commit-message.sh` 校验 message 文件；安装 hook 后，`git commit` 会自动执行同一套检查。
+9. 如果 Codex `PreToolUse` hook 已加载，active slice 在 `awaiting_user_commit_confirm` 或 `committing` 时不得再写实现、文档、配置、task、solution 或 review 文件；commit confirmation 只能用单条、非复合 Bash 命令运行第 7 步的安装器、显式 stage active state 文件、review contract 文件和 contract 中记录的 `reviewed_paths`。不要使用 `git add .`、`git add -A`、`git add --all`、`git -C` 路径混淆或包含 `&&` / `;` / 管道的复合命令；新变化必须回到 `$porter-codex-plugin:solution-execute` 回修。
+10. 安装的 Git `commit-msg` hook 必须拒绝没有匹配 committed solution trailer 的未终止 active solution 提交；普通 `git commit` 只有在 active state 已写为 `committed`、commit message trailer 匹配、staged review contract blob 匹配 state 记录、staged 文件均属于 review contract 或 active state/contract 文件，且 staged blob 与 mode 匹配 review contract 时才通过。仓库中其它 stale `current.json` 不应阻塞当前已匹配 committed slice 的提交；它们应由后续独立清理处理。
+11. 为避免 post-commit 后再次弄脏工作区，确认提交后按以下顺序执行：
+   - 确认 review contract 文件已存在，且 state 中记录了 `review_contract` 和 `review_contract_blob`。
+   - 先把 state 写为 `committing`，保留 `review_contract` 和 `review_contract_blob`，记录待提交 subject 和 trailer。
+   - 显式 staging review contract 文件、contract 中需要进入提交的 reviewed paths 和 active state 文件，并完成 message validation。
+   - 在运行 `git commit` 前，把 state 改写为 `committed`、保留 `review_contract` / `review_contract_blob` 且移除 `next_skill`，让最终 state 随同本次 commit 一起进入提交；如果已安装 `commit-msg` hook，普通 `git commit` 会再次校验 subject、type、trailers、staged path contract、blob contract 和 mode contract。
+   - 如果 `git commit` 失败，立即把 state 恢复为 `awaiting_user_commit_confirm` 或保留 `committing` 并记录失败原因，停止等待用户判断。
+12. commit 成功后，用 `git log -1 --format=%B` 验证 subject 和 trailers；如果不满足 contract，不默认 amend 已 push 历史，先提示风险并等待用户决定。
+
+`committed` state 示例：
+
+```json
+{
+  "state": "committed",
+  "current_skill": "git commit",
+  "timeline": ".codex/timeline/<timeline-name>",
+  "active_slice": "<slice-id>-<type>-<slug>",
+  "solution": ".codex/timeline/<timeline-name>/solutions/<slice-id>-<type>-<slug>.md",
+  "task": ".codex/timeline/<timeline-name>/tasks/<slice-id>-<type>-<slug>.md",
+  "review": ".codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.md",
+  "review_contract": ".codex/timeline/<timeline-name>/reviews/<slice-id>-<type>-<slug>.contract.json",
+  "review_contract_blob": "<git blob oid of review_contract>",
+  "commit": {
+    "subject": "<type>(<scope>): <summary>",
+    "trailers": {
+      "Codex-Timeline": "<timeline-name>",
+      "Codex-Slice": "<slice-id-type-slug>"
+    }
+  },
+  "allowed_outputs": []
+}
+```
+
+`committed` 是终止态，`next_skill` 应为空或不存在。
 
 ## 收尾提示
 
 如果结果为 `pass`，停止并提示：
 
-**"Review 已完成，结果为 pass。还有要补充审查的吗？如果没有，请显式调用 `$porter-codex-plugin:commit` 提交。"**
+**"Review 已完成，结果为 pass。当前 slice 进入 `awaiting_user_commit_confirm`。如果确认提交，我会按 commit message contract 使用普通 Git commit；如果还要改，请调用 `$porter-codex-plugin:solution-execute` 回修。"**
 
 如果结果为 `needs-fix`、`needs-task-update` 或 `needs-solution-update`，停止并提示：
 

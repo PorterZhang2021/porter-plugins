@@ -1,8 +1,6 @@
 ---
 name: explain
 description: 生成项目解释文档，保存到 explain/ 目录
-context: fork
-agent: general-purpose
 allowed-tools:
   - Agent
 ---

@@ -2,24 +2,13 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "apply_patch|Edit|Write",
+        "matcher": "apply_patch|Edit|Write|Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'set -e; if git_root=$(git rev-parse --show-toplevel 2>/dev/null) && [ -f \"$git_root/plugins/porter-codex-plugin/hooks/workflow-guard.sh\" ]; then exec bash \"$git_root/plugins/porter-codex-plugin/hooks/workflow-guard.sh\"; fi; script=$(find \"$HOME/.codex/plugins/cache\" -path \"*/porter-codex-plugin/*/hooks/workflow-guard.sh\" -print -quit 2>/dev/null); [ -n \"$script\" ] && exec bash \"$script\"; echo \"[workflow-guard] cannot locate workflow-guard.sh\" >&2; exit 1'",
+            "command": "bash -c 'set -e; input=$(cat); run_hook() { name=\"$1\"; if git_root=$(git rev-parse --show-toplevel 2>/dev/null) && [ -f \"$git_root/plugins/porter-codex-plugin/hooks/$name\" ]; then printf \"%s\" \"$input\" | bash \"$git_root/plugins/porter-codex-plugin/hooks/$name\"; return; fi; script=$(find \"$HOME/.codex/plugins/cache\" -path \"*/porter-codex-plugin/*/hooks/$name\" -print -quit 2>/dev/null); if [ -n \"$script\" ]; then printf \"%s\" \"$input\" | bash \"$script\"; fi; return 0; }; run_hook solution-lifecycle-guard.sh; run_hook solution-branch-guard.sh'",
             "timeout": 30,
-            "statusMessage": "Checking Porter workflow stage"
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash -c 'set -e; if git_root=$(git rev-parse --show-toplevel 2>/dev/null) && [ -f \"$git_root/plugins/porter-codex-plugin/hooks/workflow-guard.sh\" ]; then exec bash \"$git_root/plugins/porter-codex-plugin/hooks/workflow-guard.sh\"; fi; script=$(find \"$HOME/.codex/plugins/cache\" -path \"*/porter-codex-plugin/*/hooks/workflow-guard.sh\" -print -quit 2>/dev/null); [ -n \"$script\" ] && exec bash \"$script\"; echo \"[workflow-guard] cannot locate workflow-guard.sh\" >&2; exit 1'",
-            "timeout": 30,
-            "statusMessage": "Checking Porter workflow command"
+            "statusMessage": "Checking Porter solution lifecycle"
           }
         ]
       }

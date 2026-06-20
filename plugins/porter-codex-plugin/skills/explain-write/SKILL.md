@@ -1,8 +1,6 @@
 ---
 name: explain-write
 description: 基于 explain-explore 返回的 findings，读取对应模板，生成并写入解释文档
-context: fork
-agent: general-purpose
 allowed-tools:
   - ReadFile
   - WriteFile

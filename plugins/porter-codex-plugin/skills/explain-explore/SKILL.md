@@ -1,8 +1,6 @@
 ---
 name: explain-explore
 description: 探索项目文件，收集指定类型解释文档所需的上下文，返回结构化 findings
-context: fork
-agent: Explore
 allowed-tools:
   - ReadFile
   - Glob

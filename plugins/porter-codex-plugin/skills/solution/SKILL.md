@@ -1,6 +1,6 @@
 ---
 name: solution
-description: 默认通过 pre-solution discussion 与用户澄清需求、候选类型和边界；用户确认后基于当前开发分支生成 solution 阶段方案文档，并把新 slice 写入 timeline container
+description: 通过 pre-solution discussion 澄清需求、类型、timeline 和边界；用户确认后生成 active slice 的 solution 与 state，并以 current.json 记录指针
 allowed-tools:
   - Bash
   - Read
@@ -36,13 +36,6 @@ solution -> solution-task -> solution-execute -> solution-review
 .codex/timeline/<timeline-name>/states/<slice-id>-<type>-<slug>.json
 ```
 
-旧路径只用于当前在途 slice 收尾：
-
-```text
-.codex/timeline/<branch-type>/<branch-name>/SOLUTION.md
-.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json
-```
-
 ## 调用方式
 
 唯一入口：
@@ -62,11 +55,24 @@ $porter-codex-plugin:solution <问题或目标描述>
 确认，写方案
 ```
 
-正式写入前必须已有确认过的 type、目标、范围和最终描述，并且当前分支必须是非 `main` / `master` 的开发分支。
+正式写入前必须已有确认过的 type、目标、范围、timeline name 和最终描述。
+
+## Protected Branch Guard
+
+正式写入前必须检查当前 Git 分支。
+
+- 如果当前分支是 `main` 或 `master`，停止，不写 `.codex/timeline/`，提示用户先自行切换到开发分支或使用 Codex 原生 Git 能力创建工作上下文。
+- 如果当前不在 Git repo、分支处于 detached 状态，或分支名无法读取，但用户已经明确确认 timeline name，可以继续写入。
+- 不要求分支名符合 `<type>/<name>`。
+- 不要求分支 type 等于 solution type。
+- 不要求先调用任何分支创建 skill。
+- 不要求存在 `branch.<branch>.porter-base`。
+- 不在 solution 阶段重命名分支；solution 写入 state 文件或 `current.json` 时不触发 rename。
+- 分支名对齐由 `$porter-codex-plugin:solution-task` 写入 task 文件前的 Codex hook 处理。
 
 ## 前置方案讨论（强制）
 
-当用户未显式传入 type 或未确认范围时，必须进入前置讨论模式。
+当用户未显式传入 type、timeline name 或未确认范围时，必须进入前置讨论模式。
 
 前置讨论模式：
 
@@ -76,73 +82,64 @@ $porter-codex-plugin:solution <问题或目标描述>
 - 可以根据讨论临时读取一个或多个 `reference/<type>.md`，帮助重新整理问题。
 - 可以在讨论中切换候选 type。
 - 用户可以用自然语言纠偏，例如"这个应该是 docs"、"这个更像 fix"。
-- 如果发现需求包含多个目标，提示拆成多个 solution；如果范围明显变大，提示可能升级为 MVP。
+- 如果发现需求包含多个目标，提示拆成多个 solution；如果范围明显变大，提示可能升级为 timeline overview。
 - 不写入 `.codex/timeline/`。
 
 checkpoint 小结只在关键节点输出：
 
 - 初步理解已经形成。
 - 候选 type 发生变化。
+- timeline name 发生变化。
 - 范围边界发生变化。
 - 用户提出 type 倾向或纠偏。
 - 用户要求总结、确认或写方案。
-- 需要建议创建或切换分支。
+- 需要建议选择 timeline name 或工作环境。
 
 checkpoint 小结包含：
 
 - 我的理解：当前目标、背景和限制。
 - 候选类型：主候选 type、备选 type、判断理由。
+- Timeline：当前建议或已确认的 timeline name。
 - 当前边界：可能做什么、不做什么。
 - 已参考模板：本轮实际读取或套用过哪些 `reference/<type>.md`；没有则省略。
 - 需要确认：继续推进前需要用户确认的问题。
-- 下一步：继续讨论、确认 type、建议创建分支，或在用户要求写方案且当前分支可用于记录 timeline 时写入 solution 文件。
+- 下一步：继续讨论、确认 type、确认 timeline，或在用户要求写方案且 protected branch guard 通过时写入 solution 文件。
 
 ## 正式写入确认（强制）
 
 1. 如果用户还在描述需求，继续执行前置方案讨论，不写文件。
 2. 如果用户表达"好了，帮我写方案吧"、"确认，写方案"等写入意图，先回放讨论结论。
-3. 回放内容必须包含最终 type、目标、范围、最终描述、主要验收标准和是否需要拆分。
-4. 如果用户尚未确认 type、目标、范围或最终描述，继续讨论，不写文件。
-5. 正式写入前必须校验当前分支不是 `main` / `master`，且可解析为 `<branch-type>/<branch-name>`。
-6. 如果当前分支 type 或命名与最终 type、目标描述不一致，不阻塞写入；必须写入`分支重命名检查点`，提示后续由 `$porter-codex-plugin:delivery-branch` 确认并执行 rename。
+3. 回放内容必须包含最终 type、timeline name、目标、范围、最终描述、主要验收标准和是否需要拆分。
+4. 如果用户尚未确认 type、timeline name、目标、范围或最终描述，继续讨论，不写文件。
+5. 正式写入前执行 protected branch guard。
+6. 分支名与最终 slice id 不一致时，只在`工作上下文`记录当前分支；不要在 solution 阶段执行 rename。`solution-task` 写入 task 文件前会由 Codex hook 尝试把本地分支对齐到 `<type>/<solution-slug>`。
 
 ## 时间线切片路由
 
-### 路径选择
-
-根据当前分支 `<branch-type>/<branch-name>` 解析默认 timeline name：
-
-```text
-<timeline-name> = <branch-name>
-```
-
-例如：
-
-```text
-feat/refactor-feature-development -> .codex/timeline/refactor-feature-development/
-```
-
-长期 MVP timeline 可以使用用户确认过的 timeline name，但 `mvp` 不是 slice type。
+### Timeline name 解析
 
 timeline name 解析顺序：
 
 1. 如果本轮对话中用户明确确认了 timeline name，使用该名称。
-2. 否则使用当前 `<branch-name>` 作为默认 timeline name。
-3. 如果需要创建新 slice，必须写入 `.codex/timeline/<timeline-name>/` 新路径。
+2. 如果 `.codex/timeline/*/current.json` 中恰好有一个 active state 需要当前 solution 继续更新，使用该 timeline。
+3. 如果当前分支不是 `main` / `master`，可以把分支名第一段 `/` 之后的部分作为默认 timeline name；没有 `/` 时，可以把整个分支名作为默认 timeline name。
+4. 如果仍无法确定 timeline name，停止并请用户明确 timeline name。
+
+timeline name 必须使用 kebab-case，且写入 `.codex/timeline/<timeline-name>/`。
 
 ### 新路径优先
 
 正式写入前按顺序判断：
 
 1. 如果 `.codex/timeline/<timeline-name>/current.json` 存在，必须优先读取它。
-2. 如果 active slice 的 `states/<slice>.json` 不是 `awaiting_commit`，停止并提示用户继续该 state 中的 `next_skill`，不创建新 slice。
-3. 如果需要创建新 slice，扫描 timeline container 中已有文件编号，生成下一个 slice id。
-4. 如果 `current.json` 不存在，但旧 `.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json` 存在，先读取旧 state：
-   - 如果旧 state 不是 `awaiting_commit`，继续当前旧 slice 到完成。
-   - 如果旧 state 是 `awaiting_commit`，不继续旧路径，创建新的 timeline slice record。
-5. 新 slice 创建必须使用新路径，不再写固定旧 `SOLUTION.md` / `WORKFLOW_STATE.json`。
+2. 如果 active slice 的 `states/<slice>.json` 不是终止态，停止并提示用户继续该 state 中的 `next_skill` 或当前明确的下一步。
+3. 终止态只有：
+   - `committed`
+   - `cancelled`
+4. 如果需要创建新 slice，扫描 timeline container 中已有文件编号，生成下一个 slice id。
+5. 新 slice 创建必须使用新路径，不写固定旧 `SOLUTION.md` / `WORKFLOW_STATE.json`。
 
-### 切片 id 生成
+## 切片 id 生成
 
 `solution` 是唯一创建新 slice id 的入口。
 
@@ -203,29 +200,9 @@ timeline name 解析顺序：
 }
 ```
 
-## 旧路径在途收尾
-
-旧路径只允许当前在途 slice 收尾：
-
-```text
-.codex/timeline/<branch-type>/<branch-name>/SOLUTION.md
-.codex/timeline/<branch-type>/<branch-name>/TASK.md
-.codex/timeline/<branch-type>/<branch-name>/REVIEW.md
-.codex/timeline/<branch-type>/<branch-name>/WORKFLOW_STATE.json
-```
-
-规则：
-
-- 如果 `current.json` 存在，优先使用新路径。
-- 如果 `current.json` 不存在但旧 `WORKFLOW_STATE.json` 存在，只有旧 state 未完成时才继续当前旧 slice 收尾。
-- 如果旧 `WORKFLOW_STATE.json` 已经处于 `awaiting_commit`，不能继续旧路径，必须创建新的 timeline slice record。
-- 新 slice 创建必须使用新路径。
-- 不自动迁移旧文件。
-- 不删除旧文件。
-
 ## 支持类型
 
-初版沿用现有 Git type：
+沿用 Conventional Commits 常见 type：
 
 ```text
 feat
@@ -240,7 +217,7 @@ build
 ci
 ```
 
-`solution` 不新增 `mvp` Git type。MVP 是 timeline container + overview，不是 slice type。
+`solution` 不新增 `mvp` Git type。MVP 或阶段是 timeline container + overview，不是 slice type。
 
 ## 类型推荐参考
 
@@ -278,7 +255,7 @@ ci
 
 - 时间线上下文
 - 类型决策
-- 分支重命名检查点
+- 工作上下文
 - 目标
 - 问题
 - 已读上下文
@@ -291,7 +268,7 @@ ci
 - 待确认
 - 下一步
 
-`fix` 是分析型 reference。当选定 type 为 `fix` 时，必须完成复现与根因分析流程，并把结果写入 solution 文件。新 solution workflow 中不额外调用 `$porter-codex-plugin:analyze-bug`。
+`fix` 是分析型 reference。当选定 type 为 `fix` 时，必须完成复现与根因分析流程，并把结果写入 solution 文件。
 
 ## 确认规则
 
@@ -300,9 +277,11 @@ ci
 确认点应包含：
 
 - type 选择是否正确。
+- timeline name 是否正确。
 - 范围边界是否正确。
 - 输出路径和 slice 命名是否正确。
-- 是否接受`分支重命名检查点`。
+- 工作上下文是否正确。
+- 是否接受 `solution-task` 前置 hook 将本地分支名对齐为 `<type>/<solution-slug>`。
 - 是否有需要用户选择的方案取舍。
 - 风险和验收标准是否接受。
 - 是否可以进入 `$porter-codex-plugin:solution-task`。
