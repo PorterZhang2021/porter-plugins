@@ -1,8 +1,0 @@
-{
-  "timeline": ".codex/timeline/delivery-git-lifecycle",
-  "active_slice": "002-refactor-solution-git-integration",
-  "solution": ".codex/timeline/delivery-git-lifecycle/solutions/002-refactor-solution-git-integration.md",
-  "task": ".codex/timeline/delivery-git-lifecycle/tasks/002-refactor-solution-git-integration.md",
-  "review": ".codex/timeline/delivery-git-lifecycle/reviews/002-refactor-solution-git-integration.md",
-  "state": ".codex/timeline/delivery-git-lifecycle/states/002-refactor-solution-git-integration.json"
-}
