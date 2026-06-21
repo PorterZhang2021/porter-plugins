@@ -82,7 +82,7 @@ $porter-codex-plugin:solution <问题或目标描述>
 - 可以根据讨论临时读取一个或多个 `reference/<type>.md`，帮助重新整理问题。
 - 可以在讨论中切换候选 type。
 - 用户可以用自然语言纠偏，例如"这个应该是 docs"、"这个更像 fix"。
-- 如果发现需求包含多个目标，提示拆成多个 solution；如果范围明显变大，提示可能升级为 timeline overview。
+- 如果发现需求包含多个目标，提示拆成多个 solution；如果范围明显变大，提示调用 `$porter-codex-plugin:timeline-overview` 先整理 timeline。
 - 不写入 `.codex/timeline/`。
 
 checkpoint 小结只在关键节点输出：
@@ -103,7 +103,28 @@ checkpoint 小结包含：
 - 当前边界：可能做什么、不做什么。
 - 已参考模板：本轮实际读取或套用过哪些 `reference/<type>.md`；没有则省略。
 - 需要确认：继续推进前需要用户确认的问题。
-- 下一步：继续讨论、确认 type、确认 timeline，或在用户要求写方案且 protected branch guard 通过时写入 solution 文件。
+- 下一步：继续讨论、确认 type、确认 timeline，调用 `$porter-codex-plugin:timeline-overview`，或在用户要求写方案且 protected branch guard 通过时写入 solution 文件。
+
+### Timeline Overview Handoff
+
+`solution` 只负责判断当前目标是否适合作为单个 active slice。
+
+当 pre-solution discussion 中出现以下信号时，停止写入 solution 文件，并建议用户显式调用 `$porter-codex-plugin:timeline-overview`：
+
+- 目标明显包含多个可独立验收的 slice。
+- 目标同时包含多类工作，例如 `feat`、`docs`、`build`、`test`，且边界无法收敛成单个 slice。
+- 用户无法确认单个 solution 的目标、范围或验收标准。
+- 讨论结果需要 timeline 级 backlog、整体完成标准或收口总结。
+- 用户明确询问是否需要拆分、是否已经不适合一个 solution，或是否应该升级为 overview。
+
+如果当前 solution 尚未正式写入文件，不生成半成品 solution；只回放判断理由、建议的 timeline name 或待确认项，并提示：
+
+```text
+这个目标看起来不适合直接写成单个 solution slice。建议先调用：
+$porter-codex-plugin:timeline-overview
+```
+
+`solution` 不创建 `OVERVIEW.md`，不拆完整 timeline，不修改 timeline overview 状态，也不改变现有 solution state 机。`timeline-overview` 讨论并确认多个 slice 后，再推荐用户回到 `$porter-codex-plugin:solution` 创建第一个清晰 slice。
 
 ## 正式写入确认（强制）
 

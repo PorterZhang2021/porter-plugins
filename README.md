@@ -151,6 +151,7 @@ plugins/porter-codex-plugin/scripts/validate-solution-commit-message.sh \
 | `solution-task` | 否 | 是 | 从 active slice 的 solution 文件生成 task 文件，并推进到执行阶段。 |
 | `solution-execute` | 否 | 是 | 执行 active slice 的 task，更新 task 和 state，完成后进入 review；review 后有新修改时回到回修执行。 |
 | `solution-review` | 否 | 是 | 审查 active slice 的实现和过程记录；pass 后进入用户 commit 确认态，有问题则回到 execute。 |
+| `timeline-overview` | 否 | 是 | 判断目标是否需要多个 solution slice，并维护 timeline 级 `OVERVIEW.md` / `CHANGELOG.md`。 |
 | `skill-recommender` | 否 | 是 | 根据用户意图推荐当前 Codex 插件中的合适 skill。 |
 | `claude-md` | 是 | 否 | 为 Claude Code 项目生成 CLAUDE.md。 |
 | `codex-md` | 否 | 是 | 为 Codex 项目生成 AGENTS.md。 |
@@ -219,6 +220,21 @@ Solution workflow state：
 | --- | --- |
 | `.codex/timeline/<timeline-name>/current.json` | 只保存 active slice 指针。 |
 | `.codex/timeline/<timeline-name>/states/<slice-id>-<type>-<slug>.json` | 保存完整 workflow state、当前 skill、下一 skill 或 commit confirmation 信息。 |
+
+Timeline overview（可选范围整理）：
+
+```text
+$porter-codex-plugin:timeline-overview
+  -> 判断目标是否适合单个 solution slice
+  -> 多 slice 时维护 .codex/timeline/<timeline-name>/OVERVIEW.md
+  -> 收口时维护 .codex/timeline/<timeline-name>/CHANGELOG.md
+```
+
+这条线只在目标范围不确定、连续多个 solution slice 需要整理，或一条 timeline 需要收口总结时使用。默认小目标仍直接进入 `$porter-codex-plugin:solution`。
+
+如果 `$porter-codex-plugin:solution` 的前置讨论发现目标明显不适合单个 slice，应先停止写入 solution 文件，转而调用 `$porter-codex-plugin:timeline-overview` 讨论并确认多个 slice；`timeline-overview` 写入 `OVERVIEW.md` 后，再回到 `$porter-codex-plugin:solution` 创建第一个清晰 slice。
+
+`OVERVIEW.md` / `CHANGELOG.md` 是 timeline 级人类可读账本；其中的 `candidate`、`active`、`committed`、`deferred`、`cancelled` 只用于总览，不替代 `.codex/timeline/<timeline-name>/states/<slice-id>-<type>-<slug>.json` 的 workflow gate。active slice 未结束时，应继续 state 中记录的 `next_skill`。
 
 Codex 项目初始化：
 
